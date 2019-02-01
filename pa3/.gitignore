@@ -1,0 +1,8 @@
+data/*.csv
+data/*json
+data/*tgz
+tests.json
+pima-testing.csv
+pima-training.csv
+__pycache__/*
+.pytest_cache/*
