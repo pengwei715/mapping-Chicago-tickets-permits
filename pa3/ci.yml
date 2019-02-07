@@ -7,7 +7,7 @@ compile_and_lint:
 run_tests:
     stage: test
     script:
-        - cd pa7/data && ./get_files.sh && cd ..
-        - py.test -v
+        - cd pa3/data && ./get_files.sh
+        - cd pa3 && py.test -v
     after_script:
         - cd pa3/ && ../common/grader.py
