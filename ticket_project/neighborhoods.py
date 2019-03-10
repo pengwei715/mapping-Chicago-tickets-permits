@@ -32,7 +32,7 @@ def convert_to_geodf(df, proj):
 	df.loc[:,'coordinates'] = df['coordinates'].apply(shapely.geometry.Point)
 	
 	geodf = geo_pd.GeoDataFrame(df, geometry='coordinates')
-    geodf.crs = proj
+        geodf.crs = proj
 	return geodf
 
 def find_neighborhoods(geo_df, neighborhoods):
