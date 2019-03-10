@@ -33,8 +33,21 @@ def go(input_path, output_path):
     mask = df['issue_date'] > time_before
     df = df[mask]
 
+    print('Collapsing violation columns')
+    violation_dict = {}
+    for name, grouped_df in df.groupby(['violation_description']):
+        violation_dict[name] = grouped_df['violation_code'].iloc[1]
+    code_path = output_path[:-4] + '_coded_violations.csv'
+    with open(code_path, 'w') as csv_file:
+        writer = csv.writer(csv_file)
+        for key, value in violation_dict.items():
+            writer.writerow([key, value])
+    df = df.drop(['violation_description'], axis=1)
+
     print('Outputting reduced dataset...')
     df.to_csv(output_path)
+
+
 
 if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <path to dataset> <output path>"
