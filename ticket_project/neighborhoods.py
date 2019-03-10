@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import descartes
 import pandas as pd
 import shapely
+import pyproj #pyproj dependency is 1.9.6; check for update 2.0.0 is breaking
 
 def read_shapefiles(filepath):
     '''
@@ -51,5 +52,7 @@ def find_neighborhoods(geo_df, neighborhoods):
 
     Returns: (GeoPandas GeoDataFrames)
     '''
-    geo_df.to_crs(neighborhoods.crs)
+    geo_df = geo_df.to_crs(neighborhoods.crs)
+    merged = geo_pd.sjoin(geo_df, neighborhoods, how='inner', op='within')
+    return merged
 
