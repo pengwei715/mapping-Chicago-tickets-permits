@@ -37,6 +37,7 @@ def convert_to_geodf(df, proj, long_col, lat_col):
     geodf.crs = proj
     return geodf
 
+
 def find_neighborhoods(geo_df, neighborhoods):
     '''
     Performs a spatial join to link the entries in a GeoDataFrame with their
