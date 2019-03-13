@@ -17,19 +17,22 @@ def read_shapefiles(filepath):
     return geo_pd.read_file(filepath)
 
 
-def convert_to_geodf(df, proj, long_col, lat_col):
+def convert_to_geodf(df, long_col, lat_col, proj=None):
     '''
     Converts a regular pandas dataframe to a geopandas dataframe, based on
     coordinated in the regular pandas dataframe.
 
     Inputs:
         df (Pandas DataFrame): the dataframe to convert
-        proj (dict): the sprojection for the GeoDataFrame coordinates
         long_col (str): the name of the column containing longitude coordinates
         lat_col (str): the name of the column containing latitude coordinates
-
+        proj (dict): the pprojection for the GeoDataFrame coordinates
+    
     Returns (geopandas GeoDataFrame)
     '''
+    if not proj:
+        proj = {'init': 'epsg:4326'}
+    
     df['coordinates'] = df.apply(lambda x: (x[long_col], x[lat_col]), axis=1)
     df = df[df[long_col].notna() & df[lat_col].notna()]
     df.loc[:,'coordinates'] = df['coordinates'].apply(shapely.geometry.Point)
