@@ -38,21 +38,35 @@ def geocode(series):
 	return geodict, not_coded
 
 def import_tickets(filename):
+    '''
+    Reads in a dataset of parking tickets, making some modifications to the
+    format data is presented in to decrease the size of the dataframe in memory.
+
+    Inputs:
+    filename (str): the path to a tickets dataset
+
+    Returns: Pandas dataframe
+    '''
     col_types = {'ticket_number': str, 
                  'issue_date': str,
-                 'violation_location': str,
-                 'zipcode': 'category', 
                  'violation_code': 'category',
-		 'geocoded_lng': float,
-		 'geocoded_lat': float}
+                 'geocoded_address': str,
+		         'geocoded_lng': float,
+		         'geocoded_lat': float}
     df = pd.read_csv(filename, dtype=col_types, index_col='ticket_number',
-		     usecols=col_types.keys())
-    address_split = df.violation_location.str.split(\
-		    r'(?<=\A)([0-9]+)\s+([NSEW])\s+(.+)(?=\Z)', expand=True)
-    df['street_num'] = address_split.iloc[:,[1]].astype(float)
-    df['street_dir'] = address_split.iloc[:,[2]].astype('category')
-    df['street_name'] = address_split.iloc[:,[3]].astype('category')
-    df.drop(labels='violation_location', axis=1, inplace=True)
+		             usecols=col_types.keys())
+    print('here')
+    address_split = df.geocoded_address.str.split(\
+		            r'([0-9]+)\s+([NSEW])\s(.+),.+,.+([0-9]{5,5})',\
+                    expand=True)
+    df['street_num'] = address_split.iloc[:,[1]].astype(str)
+    df['street_dir'] = address_split.iloc[:,[2]]
+    df['street_dir'] = df['street_dir'].astype('category')
+    df['street_name'] = address_split.iloc[:,[3]]
+    df['street_name'] = df['street_name'].astype('category')
+    df['zipcode'] = address_split.iloc[:,[4]]
+    df['zipcode'] = df['zipcode'].astype('category')
+    df.drop(labels='geocoded_address', axis=1, inplace=True)
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     return df
 
