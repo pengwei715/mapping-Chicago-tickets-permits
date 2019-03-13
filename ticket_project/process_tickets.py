@@ -1,5 +1,5 @@
 import pandas as pd 
-import geocoder
+#import geocoder
 import csv
 
 def reduce_df(df, output_path):
@@ -43,10 +43,16 @@ def import_tickets(filename):
                  'violation_location': str,
                  'zipcode': 'category', 
                  'violation_code': 'category',
-                 'violation_description': 'category',
-                 'total_payments': float,
-                 'address': str}
-    df = pd.read_csv(filename, dtype=col_types, index_col='ticket_number')
+		 'geocoded_lng': float,
+		 'geocoded_lat': float}
+    df = pd.read_csv(filename, dtype=col_types, index_col='ticket_number',
+		     usecols=col_types.keys())
+    address_split = df.violation_location.str.split(\
+		    r'(?<=\A)([0-9]+)\s+([NSEW])\s+(.+)(?=\Z)', expand=True)
+    df['street_num'] = address_split.iloc[:,[1]].astype(float)
+    df['street_dir'] = address_split.iloc[:,[2]].astype('category')
+    df['street_name'] = address_split.iloc[:,[3]].astype('category')
+    df.drop(labels='violation_location', axis=1, inplace=True)
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     return df
 
