@@ -4,6 +4,41 @@ import descartes
 import pandas as pd
 import shapely
 import pyproj #pyproj dependency is 1.9.6; check for update 2.0.0 is breaking
+from sodapy import Socrata
+
+def import_geometries():
+    '''
+    Imports the shapefiles from a given data store on the City of Chicago data
+    portal and retuns a geopandas dataframe linking geometries to different
+    attributes.
+
+    Inputs:
+    id (str): the data set identifier
+    
+    Returns: tuple of geopandas dataframes, the first containing zipcode data
+        and the second containing neighborhood information
+    '''
+    client = Socrata('data.cityofchicago.org', 'SB7994tcuBpSSczrQvMx9N0Uy',
+                     username="benfogarty@uchicago.edu", password='d5Nut6LrCHL&')
+
+    files = client.get('unjd-c2ca')
+    df = pd.DataFrame(zipcode_files)
+    df['the_geom'] = df.the_geom.apply(shapely.geometry.shape)
+    df = geo_pd.GeoDataFrame(df, geometry='the_geom')
+    
+    return df
+
+def link_zipcodes_neighborhoods():
+    '''
+    Returns a dataframe that links zipcodes to neighborhoods. Each zipcode and
+    each neighborhood may appear more than once in the resulting dataframe as
+    zipcodes may intersect multiple neighborhoods and vice versa.
+
+    Returns: pandas dataframe
+    '''
+    zipcodes = import_geometries('unjd-c2ca')
+    neighborhoods = import_geometries('y6yq-dbs2')
+
 
 def read_shapefiles(filepath):
     '''
