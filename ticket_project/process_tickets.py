@@ -1,25 +1,8 @@
 import pandas as pd 
-import geocoder
 import csv
 import numpy
 import gc
 
-def geocode(series):
-	'''
-	geocode takes a series from a groupby.size()
-	'''
-	geodict = {}
-	not_coded = {}
-	i = 0
-	for add, amt in series.iteritems():
-		g = geocoder.osm(add)
-		if g.x:
-			geodict[add] = {'x': g.x, 'y': g.y, 'amt': amt}
-		else:
-			not_coded[add] = {'amt': amt}
-		if i % 10 == 0:
-			print(i)
-	return geodict, not_coded
 
 def import_tickets(filename):
     '''

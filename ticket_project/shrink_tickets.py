@@ -39,9 +39,11 @@ def go(input_path, output_path):
     print('Collapsing violation columns...')
     with open(output_path + 'violations_dict.csv', 'w') as f:
         violation_codes = df.drop_duplicates(['violation_code',
-                                              'violation_description'])\
-                            .violation_description\
-                            .to_csv(f)
+                                              'violation_description'])
+        violation_codes.drop(['ticket_number', 'issue_date', 'geocoded_address'
+                               ,'geocoded_lng', 'geocoded_lat'], inplace=True)
+        violation_codes.to_csv(f)
+        
     df = df.drop(['violation_description'], axis=1)
 
     print('Converting address columns...')
