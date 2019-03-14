@@ -1,24 +1,8 @@
 import pandas as pd 
-#import geocoder
+import geocoder
 import csv
-
-def reduce_df(df, output_path):
-    print('Collapsing violation columns')
-    violation_dict = {}
-    for name, grouped_df in df.groupby(['violation_description']):
-        violation_dict[name] = grouped_df['violation_code'].iloc[1]
-    code_path = output_path[:-4] + 'coded_violations.csv'
-    with open(code_path, 'w') as csv_file:
-        writer = csv.writer(csv_file)
-        for key, value in violation_dict.items():
-            writer.writerow([key, value])
-    df = df.drop(['violation_description'], axis=1)
-
-    print('Outputting reduced dataset...')
-    df.to_csv(output_path)
-
-
-
+import numpy
+import gc
 
 def geocode(series):
 	'''
@@ -50,24 +34,21 @@ def import_tickets(filename):
     col_types = {'ticket_number': str, 
                  'issue_date': str,
                  'violation_code': 'category',
-                 'geocoded_address': str,
+                 'street_num': int,
+                 'street_dir': 'category',
+                 'street_name': 'category',
+                 'zipcode': 'category',
 		         'geocoded_lng': float,
 		         'geocoded_lat': float}
     df = pd.read_csv(filename, dtype=col_types, index_col='ticket_number',
 		             usecols=col_types.keys())
-    print('here')
-    address_split = df.geocoded_address.str.split(\
-		            r'([0-9]+)\s+([NSEW])\s(.+),.+,.+([0-9]{5,5})',\
-                    expand=True)
-    df['street_num'] = address_split.iloc[:,[1]].astype(str)
-    df['street_dir'] = address_split.iloc[:,[2]]
-    df['street_dir'] = df['street_dir'].astype('category')
-    df['street_name'] = address_split.iloc[:,[3]]
-    df['street_name'] = df['street_name'].astype('category')
-    df['zipcode'] = address_split.iloc[:,[4]]
-    df['zipcode'] = df['zipcode'].astype('category')
-    df.drop(labels='geocoded_address', axis=1, inplace=True)
+    
+    df['street_num'] = pd.to_numeric(df.street_num, downcast='unsigned')
+    df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
+    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lng, downcast='float')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
+    gc.collect()
+
     return df
 
 def sweeping_data(df):
