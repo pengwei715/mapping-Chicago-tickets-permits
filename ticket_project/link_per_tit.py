@@ -9,6 +9,7 @@ import process_tickets as pro
 import permits as per
 import dask.dataframe as dd
 import pdb
+import numpy as np
 DATA_DIR = "./data/"
 
 def link_permits_tickets(per_data, tit_data, output_file ='per_tit_whole.csv'):
@@ -32,7 +33,8 @@ def link_permits_tickets(per_data, tit_data, output_file ='per_tit_whole.csv'):
     #tit_data['street_dir'] = tit_data['street_dir'].astype(str)
 
     per_data = per_data.rename(index = str, columns = {'streetname': 'upper_streetname', 'direction': 'street_dir'})
-    
+    per_data['streetnumberfrom'] = np.floor(per_data['streetnumberfrom']/100) * 100
+    per_data['streetnumberto'] = np.ceil(per_data['streetnumberto']/100) * 100
 
     tit_data = dd.from_pandas(tit_data, npartitions = 100)
     per_data = dd.from_pandas(per_data, npartitions = 40)
