@@ -10,17 +10,37 @@ Find proper way interface with API and load in ata
 #!/usr/bin/env python
 
 #requre the sodapy library
-import os
 import sys
 import pandas as pd
 import requests
 import json
 import csv
 from sodapy import Socrata
+import re
+from datetime import datetime
+import dask.dataframe as dd
 
 DATA_DIR = "./data/"
+TIT_DIR = DATA_DIR + '/tickets'
 
-def get_data():
+COLUMNS = ['uniquekey',
+           'applicationtype',
+           'applicationstartdate',
+           'worktype', 
+           'worktypedescription',
+           'applicationfinalizeddate',
+           'xcoordinate', 
+           'ycoordinate', 
+           'latitude',
+           'longitude',
+           'location',
+           'streetclosure',
+           'streetnumberfrom',
+           'streetnumberto',
+           'direction',
+           'streetname']
+
+def get_permits():
     '''
     Get some sample permit data
     Input:
@@ -34,52 +54,69 @@ def get_data():
                  username="benfogarty@uchicago.edu",
                  password="d5Nut6LrCHL&")
     results = client.get("erhc-fkv9",limit=1041814)
-    return  pd.DataFrame.from_records(results)
+    df = pd.DataFrame.from_records(results)
+    return df
 
-def trim_data(df):
-    '''
-    Find trim the data keep the time and location infor
-    Input:
-        input_filename: the raw csv file
-        output_filename: name of the result file
-    Return:
-        No return, filter the data and store it to csv file
-    '''
-    columns = ['uniquekey','applicationtype',
-        'applicationstartdate',
-        'worktype', 'worktypedescription',
-        'applicationfinalizeddate','xcoordinate', 
-        'ycoordinate', 'latitude',
-        'longitude','location','streetclosure',
-        'streetnumberfrom','streetnumberto',
-        'direction','streetname']
-    raw = df.loc[:,columns]
+def clean_permits(df):
+    raw = dd.from_pandas(df, npartitions = 104)
+    raw = raw.loc[:,COLUMNS]
     raw = raw[raw['streetclosure'].notna()]
-    clean = raw[raw['streetclosure']!='None']
-    return clean
+    raw = raw[raw['streetclosure']!='None']   
+    raw = raw.dropna(subset=['applicationstartdate', 
+        'applicationfinalizeddate','streetnumberfrom', 'streetnumberto'])
+    for item in ['applicationstartdate', 'applicationfinalizeddate']:
+        raw[item] = dd.to_datetime(per[item])   
+    return raw.compute()
+
+def split_tickets(inp='reduced_tickets.csv', out='tickets'): 
+
+  
+    inp = DATA_DIR + inp
+    raw =  pd.read_csv(inp, low_memory=False)
+    mask_2015 = raw['issue_date'].str.contains('2015',na =False)
+    mask_2016 = raw['issue_date'].str.contains('2016',na =False)
+    mask_2017 = raw['issue_date'].str.contains('2017',na =False)
+    mask_2018 = raw['issue_date'].str.contains('2018',na =False)
+
+    raw_2015 = raw[mask_2015]
+    raw_2015.to_csv(out + '_2015.csv')
+    raw_2016 = raw[mask_2016]
+    raw_2016.to_csv(out + '_2016.csv')
+    raw_2017 = raw[mask_2017]
+    raw_2017.to_csv(out + '_2017.csv')
+    raw_2018 = raw[mask_2018]
+    raw_2018.to_csv(out + '_2018.csv')
+    
+
+    result = [raw_2015, raw_2016, raw_2017, raw_2018]
+    whole = pd.concat(result)
+    whole.to_csv(DATA_DIR + out + '_15_18.csv')
+    return whole
+
+
+
+
+
+
+
+
+
+
+'''
 
 def read_csv(filename):
-    '''
     Read data from the file 
     Return pd dataframe
-    '''
-
     csv_file = DATA_DIR + filename
     data = pd.read_csv(csv_file)
     return data
 
-def write_csv(results,filename):
-
-
-    temp = set()
-    for i in range(200):
-        temp.update(set(results[i].keys()))
-    csv_columns = temp
+def write_csv(results, filename):
 
     csv_file = DATA_DIR + filename
     try:
         with open(csv_file, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            writer = csv.DictWriter(csvfile, fieldnames=COLUMNS)
             writer.writeheader()
             for data in results:
                 writer.writerow(data)
@@ -87,12 +124,10 @@ def write_csv(results,filename):
         print("I/O error")
 
 def select_by_year(filename, outputfile, year):
-
     file = DATA_DIR + filename
-
     raw = pd.read_csv(file)
-
     mask = raw['applicationstartdate'].str.contains(str(year),na = False)
     select = raw[mask]
     csv_file = DATA_DIR + outputfile
     select.to_csv(csv_file)
+'''
