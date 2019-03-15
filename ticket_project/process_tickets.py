@@ -50,5 +50,35 @@ def generate_code_dict(filename):
 	return d
 
 
-def sweeping_data(df):
-    return df[df['violation_description'] == 'STREET CLEANING'].drop(['zipcode', 'violation_description', 'violation_code'], axis=1)
+def search_for_patterns(df):
+	sweeping = df[ df['violation_code'] == 'STREET CLEANING'].sort_values('issue_date')
+	sweeping.groupby(sweeping['issue_date'].dt.month).count().issue_date
+	sweeping.groupby(sweeping['issue_date'].dt.hour).count().issue_date
+
+	resampled = sweeping.set_index('issue_date').resample('Y')
+
+def find_similar_tickets(tickets_df, date_range, violation_code, location):
+	'''
+	find_similar_tickets takes a set of parameters in the following form
+	and returns any tickets which match
+
+	inputs: tickets_df (df): result of import_tickets
+			date_range (tuple): ('YYYY-MM-DD', 'YYYY-MM-DD')
+			violation_code (str): 'violation_code'
+			location (tuple): (lat, lon)
+	returns: df
+	'''
+	diff = 0.001
+		   
+	mask = (tickets_df['issue_date'] > date_range[0]) & \
+		   (tickets_df['issue_date'] < date_range[1]) & \
+		   (tickets_df['violation_code'] == violation_code) & \
+		   (tickets_df['geocoded_lat'] < location[0] + diff) & \
+		   (tickets_df['geocoded_lat'] > location[0] - diff) & \
+		   (tickets_df['geocoded_lng'] < location[1] + diff) & \
+		   (tickets_df['geocoded_lng'] > location[1] - diff)
+
+	return tickets_df[mask]
+
+
+
