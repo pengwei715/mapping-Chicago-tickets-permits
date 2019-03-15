@@ -5,7 +5,8 @@ import gc
 import neighborhoods as nbhds
 import geocoder
 import math
-
+import matplotlib
+import mapclassify
 
 def import_tickets(ticket_file, dictionary_file):
     '''
@@ -126,8 +127,21 @@ def find_similar_tickets(tickets_df, input_dict):
     returns: df
     '''
     filtered = filter_input(tickets_df, input_dict)
-    filtered['neighborhood'] = filtered['pri_neigh']
-    filtered = filtered.drop(['geocoded_lng', 'geocoded_lat', 'index_right', 'sec_neigh', 'coordinates', 'pri_neigh'], axis=1)
-    filtered = filtered.set_index('issue_date')
+
+    nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+    base = nbhd.plot(color='white', edgecolor='black')
+    heat = filtered.dissolve(by='pri_neigh', aggfunc='count')
+    heat.drop('coordinates', axis=1)
+    #join on neighborhoods
+
+    heat.join()
+    heat.plot(ax=base, scheme='quantiles', column='issue_date')
+
+    #filtered.plot(ax=base)
+
+    matplotlib.pyplot.show()
+
+
+
     return filtered
     
