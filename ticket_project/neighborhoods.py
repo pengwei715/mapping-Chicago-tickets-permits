@@ -15,8 +15,7 @@ def import_geometries(ds_id, proj=None):
     Inputs:
     ds_id (str): the data set identifier
     
-    Returns: tuple of geopandas dataframes, the first containing zipcode data
-        and the second containing neighborhood information
+    Returns: geodf from ds_id
     '''
     if not proj:
         proj = {'init': 'epsg:4326'}

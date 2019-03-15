@@ -2,6 +2,7 @@ import pandas as pd
 import csv
 import numpy
 import gc
+import neighborhoods as nbhds
 
 
 def import_tickets(ticket_file, dictionary_file):
@@ -48,6 +49,14 @@ def generate_code_dict(filename):
 		for key, value in reader:
 			d[key] = value
 	return d
+
+def link_with_neighborhoods(df):
+	nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+	geodf = nbhds.convert_to_geodf(df, 'geocoded_lng', 'geocoded_lat')
+
+	return nbhds.find_neighborhoods(geodf, nbhd)
+
+
 
 
 def search_for_patterns(df):
