@@ -29,7 +29,8 @@ def import_tickets(ticket_file, dictionary_file):
                  'street_name': 'category',
                  'zipcode': 'category',
                  'geocoded_lng': float,
-                 'geocoded_lat': float}
+                 'geocoded_lat': float,
+                 'fine_amt': 'category'}
     df = pd.read_csv(ticket_file, dtype=col_types, index_col='ticket_number',
                      usecols=col_types.keys())
 
