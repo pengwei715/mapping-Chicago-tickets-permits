@@ -159,6 +159,7 @@ def find_similar_tickets(tickets_df, input_dict):
         heat = geopandas.GeoDataFrame(nbhd.join(heat, on='pri_neigh', \
             how='left', rsuffix='_heat'), geometry='the_geom', crs=nbhd.crs)
         heat.plot(ax=base, scheme='quantiles', column='issue_date', legend=True)
+        matplotlib.pyplot.legend(labels=['Data 1', 'Data 2', 'Data 3'])
 
     matplotlib.pyplot.show()
 
@@ -170,7 +171,9 @@ def go_tickets(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
+    print('Loading in tickets dataset...')
     tickets = import_tickets(TICKETS_FILEPATH, VIOLATIONS_FILEPATH)
+    print('Generating analysis...')
     find_similar_tickets(tickets, parameters)
 
 
