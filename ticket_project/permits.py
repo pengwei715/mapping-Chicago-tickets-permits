@@ -17,7 +17,7 @@ import json
 import csv
 from sodapy import Socrata
 import re
-from datetime import datetime
+from datetime import datetime as dt
 import dask.dataframe as dd
 import pdb
 
@@ -57,7 +57,7 @@ def get_permits():
     df = pd.DataFrame.from_records(results)
     return df
 
-def clean_permits(df, outfile):
+def clean_permits():
     '''
     Clean the permits data
     Input:
@@ -65,6 +65,7 @@ def clean_permits(df, outfile):
     Return:
         cleaned dataframe 
     '''
+    df = get_permits()
     raw = dd.from_pandas(df, npartitions = 104)
     raw = raw.loc[:,COLUMNS]
       
@@ -78,8 +79,4 @@ def clean_permits(df, outfile):
     clean = clean[clean['streetclosure'].notna()]
     clean = clean[clean['streetclosure']!='None']
     clean = clean[clean['streetclosure']!='NA']
-    clean.to_csv(DATA_DIR + outfile)
     return clean
-
-def read(filename):
-    return pd.read_csv(DATA_DIR +filename)
