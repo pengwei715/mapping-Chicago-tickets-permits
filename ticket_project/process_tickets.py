@@ -1,9 +1,10 @@
-import pandas as pd 
 import csv
-import numpy
 import gc
-import neighborhoods as nbhds
+import pandas as pd
 import geocoder
+import matplotlib
+import geopandas
+import neighborhoods as nbhds
 
 
 def import_tickets(ticket_file, dictionary_file):
@@ -16,7 +17,7 @@ def import_tickets(ticket_file, dictionary_file):
 
     Returns: Pandas dataframe
     '''
-    col_types = {'ticket_number': str, 
+    col_types = {'ticket_number': str,
                  'issue_date': str,
                  'violation_code': 'category',
                  'street_num': int,
@@ -27,13 +28,14 @@ def import_tickets(ticket_file, dictionary_file):
                  'geocoded_lat': float}
     df = pd.read_csv(ticket_file, dtype=col_types, index_col='ticket_number',
                      usecols=col_types.keys())
-    
+
     df['street_num'] = pd.to_numeric(df.street_num, downcast='unsigned')
     df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
     df['geocoded_lat'] = pd.to_numeric(df.geocoded_lat, downcast='float')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     violations = generate_code_dict(dictionary_file)
-    df['violation_code'] = df['violation_code'].map(violations).astype('category')
+    df['violation_code'] = \
+                    df['violation_code'].map(violations).astype('category')
     gc.collect()
 
     return df
@@ -52,64 +54,65 @@ def generate_code_dict(filename):
     return d
 
 def link_with_neighborhoods(df):
+    '''
+    link_with_neighborhoods is a helper function which processes a dataframe
+    and returns a geocoded one
+    input: (df) tickets_df
+    output: (geo_df) geo_tickets_df
+    '''
     nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
     geodf = nbhds.convert_to_geodf(df, 'geocoded_lng', 'geocoded_lat')
 
     return nbhds.find_neighborhoods(geodf, nbhd)
 
 
-def search_for_patterns(df):
-    sweeping = df[ df['violation_code'] == 'STREET CLEANING'].sort_values('issue_date')
-    sweeping.groupby(sweeping['issue_date'].dt.month).count().issue_date
-    sweeping.groupby(sweeping['issue_date'].dt.hour).count().issue_date
-
-    resampled = sweeping.set_index('issue_date').resample('Y')
-
 def filter_input(df, input_dict):
+    '''
+    filter_input takes a tickets_df and returns a filtered df based on the
+    filters given in input_dict
+
+    inputs: (df) tickets_df
+            (dict) input_dict
+    returns: (df) filtered df
+    '''
     fail_str = '{} {} not found, ignoring'
     success_str = 'filtered on {} number of tickets reduced from {} to {}'
-    column_dict = {'neighborhood': 'pri_neigh',
-                   'violation': 'violation_code',
+    column_dict = {'violation': 'violation_code',
                    'start_date': 'issue_date',
                    'end_date': 'issue_date',
                    'location': ['geocoded_lng', 'geocoded_lat']}
-    dist_diff = 0.01
+    dist_diff = 0.0145 #approximately 1 mile in distance
 
-    for key in input_dict:
+    for key, val in input_dict.items():
         row_nums = df.shape[0]
 
-
-        if key in ('neighborhood', 'violation'):
+        if key == 'violation':
             unique_vals = df[column_dict[key]].unique()
-            input_val = input_dict[key]
-            
-            if input_val not in unique_vals:
-                print(fail_str.format(key, input_val))
+            if val not in unique_vals:
+                print(fail_str.format(key, val))
             else:
-                df = df[ df[column_dict[key]] == input_val ]
-                print(success_str.format(input_val, row_nums, df.shape[0]))
+                df = df[df[column_dict[key]] == val]
+                print(success_str.format(val, row_nums, df.shape[0]))
         if key in ('start_date', 'end_date'):
-            date_input = input_dict[key]
             if key == 'start_date':
-                df = df[ df[column_dict[key]] > date_input]
+                df = df[df[column_dict[key]] > val]
             else:
-                df = df[ df[column_dict[key]] < date_input]
-            print(success_str.format(date_input, row_nums, df.shape[0]))
+                df = df[df[column_dict[key]] < val]
+            print(success_str.format(val, row_nums, df.shape[0]))
         if key == 'location':
             g = geocoder.osm(input_dict[key])
-            input_val = input_dict[key]
             if g.x and g.y:
                 mask = (df[column_dict[key][0]] < g.x + dist_diff) & \
                        (df[column_dict[key][0]] > g.x - dist_diff) & \
                        (df[column_dict[key][1]] < g.y + dist_diff) & \
                        (df[column_dict[key][1]] > g.y - dist_diff)
-
                 df = df[mask]
-                print(success_str.format(input_val, row_nums, df.shape[0]))
+                print(success_str.format(\
+                    'locations within approxmiately one mile of ' + val, \
+                    row_nums, df.shape[0]))
             else:
-                print(fail_str.format(key, input_val))
+                print(fail_str.format(key, val))
     return df
-
 
 
 def find_similar_tickets(tickets_df, input_dict):
@@ -127,6 +130,22 @@ def find_similar_tickets(tickets_df, input_dict):
                                'violation' : 'violation_code'
     returns: df
     '''
+    filtered = filter_input(tickets_df, input_dict)
+    nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+    geocoded = link_with_neighborhoods(filtered)
 
-    new = filter_input(tickets_df, input_dict)
-    
+    if 'location' in input_dict or 'neighborhood' in input_dict:
+        filtered_nbhd = \
+            nbhd[nbhd['pri_neigh'].isin(geocoded.pri_neigh.unique())]
+        base = filtered_nbhd.plot(color='white', edgecolor='black')
+        geocoded.plot(ax=base)
+
+    else: #citywide
+        base = nbhd.plot(color='white', edgecolor='black')
+        heat = geocoded.dissolve(by='pri_neigh', aggfunc='count')
+        heat.drop('coordinates', axis=1)
+        heat = geopandas.GeoDataFrame(nbhd.join(heat, on='pri_neigh', \
+            how='left', rsuffix='_heat'), geometry='the_geom', crs=nbhd.crs)
+        heat.plot(ax=base, scheme='quantiles', column='issue_date', legend=True)
+
+    matplotlib.pyplot.show()

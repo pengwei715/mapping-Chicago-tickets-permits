@@ -4,8 +4,8 @@ import csv
 
 def go(input_path, output_path):
     '''
-    Takes the full ProPublica parking tickets dataset as a CSV, reads in columns of
-    interest, filters out rows not covered by permits data, and outputs the
+    Takes the full ProPublica parking tickets dataset as a CSV, reads in columns
+    of interest, filters out rows not covered by permits data, and outputs the
     reduced dataset and a map from violation descripitons to violation codes
     as a CSV file.
 
@@ -18,7 +18,6 @@ def go(input_path, output_path):
             'violation_description', 'geocoded_address', 'geocoded_lng',
             'geocoded_lat', ]
     col_types = {'ticket_number': str,
-
                  'issue_date': str,
                  'violation_code': str,
                  'violation_description': str,
@@ -29,13 +28,45 @@ def go(input_path, output_path):
     print('Reading in full dataset...')
     df = pd.read_csv(input_path, usecols=cols,
                      dtype=col_types, index_col='ticket_number')
+    
+    df = filter_by_row(df)
+    df = collapse_violations_columns(df, output_path)
+    df = convert_address_column(df)
 
+    output_data(df, output_path)
+
+
+def filter_by_row(df):
+    '''
+    Removes rows from the dataset occurring before 1 January 2012, as this time
+    is inconsistently covered in the permits dataset.
+
+    Inputs:
+    df (Pandas dataframe): the dataset of tickets
+
+    Returns: Pandas dataframe
+    '''
     print('Filtering dataset...')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     time_before = pd.to_datetime('1/1/2012 0:00')
     mask = df['issue_date'] > time_before
     df = df.loc[mask]
 
+    return df
+
+def collapse_violations_columns(df, output_path):
+    '''
+    Removes the violations description column and generates a dictionary linking
+    violation codes to violation descriptions. The dictonary is saved to a csv
+    file in the output path.
+
+    Inputs:
+    df (Pandas dataframe): the dataset of tickets
+    output_path (string): the folder for the violation code dictionary to be
+        created in
+
+    Returns: Pandas dataframe
+    '''
     print('Collapsing violation columns...')
     with open(output_path + 'violations_dict.csv', 'w') as f:
         violation_codes = df.drop_duplicates(['violation_code',
@@ -47,6 +78,20 @@ def go(input_path, output_path):
         
     df = df.drop(['violation_description'], axis=1)
 
+    return df
+
+def convert_address_column(df):
+    '''
+    Converts the address column to three columns, the street number, the street
+    direction, the street name, and the zipcode. Removes any rows for which the
+    geocoded address cannot be parsed (which genrally means that the location
+    was not accurately geocoded or that the location is outside of Chicago).
+
+    Inputs:
+    df (Pandas dataframe): the dataset of tickets
+    
+    Returns: Pandas dataframe
+    '''
     print('Converting address columns...')
     address_split = df.geocoded_address.str.extract(\
                     r'([0-9]+)\s+([NSEW])\s(.+),.+,.+([0-9]{5,5})',\
@@ -56,14 +101,24 @@ def go(input_path, output_path):
                    1: 'street_dir',
                    2: 'street_name',
                    3: 'zipcode'}
-    df.rename(rename_cols, inplace=True, axis=1)
-    df.drop(labels='geocoded_address', axis=1, inplace=True)
-
+    df = df.rename(rename_cols, inplace=True)
+    df = df.drop(labels='geocoded_address', axis=1)
 
     print('Removing rows with unparsable address data...')
     df = df[df.zipcode.notna() & df.street_num.notna()\
             & df.street_dir.notna()]
+    
+    return df
 
+def output_data(df, output_path):
+    '''
+    Outputs the reduced tickets dataset and six samples of the dataset with
+    sizes 10^n for n between 1 and 6 to csv files in the output path.
+
+    Inputs:
+    output_path (string): the folder for the reduced dataset and violation
+    code dictionary to be created in
+    '''
     print('Outputting reduced dataset...')
     with open(output_path + 'reduced_tickets.csv', 'w') as f:
         df.to_csv(f)
@@ -74,6 +129,7 @@ def go(input_path, output_path):
         output_loc = output_path + 'sample_tickets_' + str(n) + '.csv'
         with open(output_loc, 'w') as f:
             df.sample(n).to_csv(f)
+
 
 if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <path to dataset> <output path>"
