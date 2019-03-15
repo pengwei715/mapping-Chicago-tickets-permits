@@ -4,6 +4,7 @@ import numpy
 import gc
 import neighborhoods as nbhds
 import geocoder
+import math
 
 
 def import_tickets(ticket_file, dictionary_file):
@@ -73,12 +74,10 @@ def filter_input(df, input_dict):
                    'start_date': 'issue_date',
                    'end_date': 'issue_date',
                    'location': ['geocoded_lng', 'geocoded_lat']}
-    dist_diff = 0.01
+    dist_diff = 0.0145 #approximately 1 mile in distance
 
     for key in input_dict:
         row_nums = df.shape[0]
-
-
         if key in ('neighborhood', 'violation'):
             unique_vals = df[column_dict[key]].unique()
             input_val = input_dict[key]
@@ -105,11 +104,10 @@ def filter_input(df, input_dict):
                        (df[column_dict[key][1]] > g.y - dist_diff)
 
                 df = df[mask]
-                print(success_str.format(input_val, row_nums, df.shape[0]))
+                print(success_str.format('locations within approxmiately one mile of ' + input_val, row_nums, df.shape[0]))
             else:
                 print(fail_str.format(key, input_val))
     return df
-
 
 
 def find_similar_tickets(tickets_df, input_dict):
@@ -127,6 +125,9 @@ def find_similar_tickets(tickets_df, input_dict):
                                'violation' : 'violation_code'
     returns: df
     '''
-
-    new = filter_input(tickets_df, input_dict)
+    filtered = filter_input(tickets_df, input_dict)
+    filtered['neighborhood'] = filtered['pri_neigh']
+    filtered = filtered.drop(['geocoded_lng', 'geocoded_lat', 'index_right', 'sec_neigh', 'coordinates', 'pri_neigh'], axis=1)
+    filtered = filtered.set_index('issue_date')
+    return filtered
     
