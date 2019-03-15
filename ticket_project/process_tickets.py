@@ -80,7 +80,8 @@ def filter_input(df, input_dict):
     column_dict = {'violation': 'violation_code',
                    'start_date': 'issue_date',
                    'end_date': 'issue_date',
-                   'location': ['geocoded_lng', 'geocoded_lat']}
+                   'location': ['geocoded_lng', 'geocoded_lat'],
+                   'neighborhood': 'zipcode'}
     dist_diff = 0.0145 #approximately 1 mile in distance
 
     for key, val in input_dict.items():
@@ -93,6 +94,14 @@ def filter_input(df, input_dict):
             else:
                 df = df[df[column_dict[key]] == val]
                 print(success_str.format(val, row_nums, df.shape[0]))
+        if key == 'neighborhood':
+        	neigh_dict = nbhds.link_neighs_zips()
+        	if val in neigh_dict:
+        		df = df[df[column_dict[key]].isin(neigh_dict[val])]
+        		print(success_str.format('approximate filtering for ' + val, \
+        								 row_nums, df.shape[0]))
+        	else:
+        		print(fail_str.format(key, val))
         if key in ('start_date', 'end_date'):
             if key == 'start_date':
                 df = df[df[column_dict[key]] > val]

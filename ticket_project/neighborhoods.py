@@ -35,21 +35,17 @@ def import_geometries(ds_id, proj=None):
 
     return df
 
-def link_neighs_zips(zipcodes, neighborhoods):
+def link_neighs_zips():
     '''
     Returns a dictionary linking neighborhoods to a list of zipcodes
     intersecting that neighborhood. Each neighborhood may be linked to multiple
     zipcodes and vice versa as neighborhoods may intersect multiple zipcodes and
     vice versa.
 
-    Inputs:
-    zipcodes (GeoPandas GeoDataFrame): describes the boundaries of zipcode areas
-        within the Chicago city limits
-    neighborhoods (GeoPandas GeoDataFrame): describes the boundaries of 98
-        neighborhoods defined withing the Chicago city limits
-
     Returns: dictionary
     '''
+    neighborhoods = import_geometries(NEIGHS_ID)
+    zipcodes = import_geometries(ZIPCODES_ID)
     link = geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')
     neighs_zips_dict = {}
     for neighborhood in list(neighborhoods['pri_neigh']):
