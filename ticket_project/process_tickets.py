@@ -7,6 +7,7 @@ import geocoder
 import math
 import matplotlib
 import mapclassify
+import geopandas
 
 def import_tickets(ticket_file, dictionary_file):
     '''
@@ -133,10 +134,8 @@ def find_similar_tickets(tickets_df, input_dict):
     heat = filtered.dissolve(by='pri_neigh', aggfunc='count')
     heat.drop('coordinates', axis=1)
     #join on neighborhoods
-
-    heat.join()
-    heat.plot(ax=base, scheme='quantiles', column='issue_date')
-
+    heat = geopandas.GeoDataFrame(nbhd.join(heat, on='pri_neigh', how='left', rsuffix='_heat'), geometry='the_geom', crs=nbhd.crs)
+    heat.plot(ax=base, scheme='quantiles', column='issue_date', legend=True)
     #filtered.plot(ax=base)
 
     matplotlib.pyplot.show()
