@@ -16,7 +16,7 @@ def go(input_path, output_path):
     '''
     cols = ['ticket_number', 'issue_date', 'violation_code',
             'violation_description', 'geocoded_address', 'geocoded_lng',
-            'geocoded_lat', ]
+            'geocoded_lat', 'fine_level1_amount']
     col_types = {'ticket_number': str,
                  'issue_date': str,
                  'violation_code': str,
@@ -28,7 +28,7 @@ def go(input_path, output_path):
     print('Reading in full dataset...')
     df = pd.read_csv(input_path, usecols=cols,
                      dtype=col_types, index_col='ticket_number')
-    
+    df = df.rename({'fine_level1_amount': 'fine_ams'}, axis=1)
     df = filter_by_row(df)
     df = collapse_violations_columns(df, output_path)
     df = convert_address_column(df)
