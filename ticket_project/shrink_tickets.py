@@ -51,7 +51,7 @@ def filter_by_row(df):
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     time_before = pd.to_datetime('1/1/2012 0:00')
     mask = df['issue_date'] > time_before
-    #df = df.loc[mask]
+    df = df.loc[mask]
 
     return df
 
