@@ -1,3 +1,6 @@
+'''
+neighborhoods XXX
+'''
 import geopandas as geo_pd
 import pandas as pd
 import shapely
@@ -14,7 +17,7 @@ def import_geometries(ds_id, proj=None):
 
     Inputs:
     ds_id (str): the data set identifier
-    
+
     Returns: geodf from ds_id
     '''
     if not proj:
@@ -29,7 +32,7 @@ def import_geometries(ds_id, proj=None):
     df = geo_pd.GeoDataFrame(df, geometry='the_geom')
     df.crs = proj
     df.drop(['shape_area', 'shape_len'], axis=1, inplace=True)
-    
+
     return df
 
 def link_neighs_zips(zipcodes, neighborhoods):
@@ -50,8 +53,8 @@ def link_neighs_zips(zipcodes, neighborhoods):
     link = geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')
     neighs_zips_dict = {}
     for neighborhood in list(neighborhoods['pri_neigh']):
-    	mask = link['pri_neigh'] == neighborhood
-    	neighs_zips_dict[neighborhood] = list(link[mask]['zip'])
+        mask = link['pri_neigh'] == neighborhood
+        neighs_zips_dict[neighborhood] = list(link[mask]['zip'])
 
     return neighs_zips_dict
 
@@ -65,15 +68,15 @@ def convert_to_geodf(df, long_col, lat_col, proj=None):
         long_col (str): the name of the column containing longitude coordinates
         lat_col (str): the name of the column containing latitude coordinates
         proj (dict): the projection for the GeoDataFrame coordinates
-    
+
     Returns (geopandas GeoDataFrame)
     '''
     if not proj:
         proj = {'init': 'epsg:4326'}
 
-    df = df.loc[(df[long_col].notna() & df[lat_col].notna())]    
+    df = df.loc[(df[long_col].notna() & df[lat_col].notna())]
     df['coordinates'] = list(zip(df[long_col], df[lat_col]))
-    df.loc[:,'coordinates'] = df.coordinates.apply(shapely.geometry.Point)
+    df.loc[:, 'coordinates'] = df.coordinates.apply(shapely.geometry.Point)
     geodf = geo_pd.GeoDataFrame(df, geometry='coordinates')
     geodf.crs = proj
     return geodf
@@ -92,6 +95,6 @@ def find_neighborhoods(geo_df, neighborhoods):
     Returns: (GeoPandas GeoDataFrames)
     '''
     geo_df = geo_df.to_crs(neighborhoods.crs)
-    merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within', 
-    					  rsuffix='_neig')
+    merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within',
+                          rsuffix='_neig')
     return merged
