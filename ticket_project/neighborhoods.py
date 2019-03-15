@@ -32,11 +32,12 @@ def import_geometries(ds_id, proj=None):
     
     return df
 
-def link_zips_neighs(zipcodes, neighborhoods):
+def link_neighs_zips(zipcodes, neighborhoods):
     '''
-    Returns an updated neighborhoods dataframe coontaining a zipcode column.
-    Each neighborhood may be linked to multiple zipcodes and vice versa as
-    neighborhoods may intersect multiple zipcodes and vice versa.
+    Returns a dictionary linking neighborhoods to a list of zipcodes
+    intersecting that neighborhood. Each neighborhood may be linked to multiple
+    zipcodes and vice versa as neighborhoods may intersect multiple zipcodes and
+    vice versa.
 
     Inputs:
     zipcodes (GeoPandas GeoDataFrame): describes the boundaries of zipcode areas
@@ -44,11 +45,15 @@ def link_zips_neighs(zipcodes, neighborhoods):
     neighborhoods (GeoPandas GeoDataFrame): describes the boundaries of 98
         neighborhoods defined withing the Chicago city limits
 
-    Returns:GeoPandas GeoDataFrame
+    Returns: dictionary
     '''
-    return geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')\
-                 .filter(['pri_neigh', 'sec_neigh', 'zip', 'the_geom'])\
-                 .drop_duplicates(subset=['pri_neigh', 'sec_neigh', 'zip'])
+    link = geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')
+    neighs_zips_dict = {}
+    for neighborhood in list(neighborhoods['pri_neigh']):
+    	mask = link['pri_neigh'] == neighborhood
+    	neighs_zips_dict[neighborhood] = list(link[mask]['zip'])
+
+    return neighs_zips_dict
 
 def convert_to_geodf(df, long_col, lat_col, proj=None):
     '''
@@ -87,33 +92,6 @@ def find_neighborhoods(geo_df, neighborhoods):
     Returns: (GeoPandas GeoDataFrames)
     '''
     geo_df = geo_df.to_crs(neighborhoods.crs)
-    merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within', rsuffix='_neig')
+    merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within', 
+    					  rsuffix='_neig')
     return merged
-
-def find_neighborhoods2(geo_df, neighborhoods, block_on_zip=False):
-    '''
-    Performs a spatial join to link the entries in a GeoDataFrame with their
-    respective neighborhoods
-
-    Inputs:
-        geo_df (GeoPandas GeoDataFrame): the geodataframe to link with
-            neighborhoods
-        neighborhoods (GeoPandas GeoDataFrame): a GeoDataFrame containing all
-            the neighborhoods
-
-    Returns: (GeoPandas GeoDataFrames)
-    '''
-    if block_on_zip:
-        zips = import_geometries(ZIPCODES_ID)
-        neighborhoods = link_zips_neighs(zips, neighborhoods)
-        output_geodf = geo_pd.GeoDataFrame(crs=neighborhoods.crs)
-        for zipcode in set(zips['zip']):
-            tickets_to_join = geo_df[geo_df['zipcode'] == zipcode]
-            neighs_to_join = neighborhoods[neighborhoods['zip'] == zipcode]
-            if not tickets_to_join.empty:
-                concat = find_neighborhoods(tickets_to_join, neighs_to_join)
-                output_geodf = geo_pd.GeoDataFrame( pd.concat([output_geodf, concat]), crs=output_geodf.crs)
-    else:
-        output_geodf = find_neighborhoods(geo_df, neighborhoods)
-
-    return output_geodf
