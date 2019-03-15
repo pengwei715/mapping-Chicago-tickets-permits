@@ -28,7 +28,7 @@ def import_tickets(ticket_file, dictionary_file):
     
     df['street_num'] = pd.to_numeric(df.street_num, downcast='unsigned')
     df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
-    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lng, downcast='float')
+    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lat, downcast='float')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     violations = generate_code_dict(dictionary_file)
     df['violation_code'] = df['violation_code'].map(violations).astype('category')
