@@ -1,56 +1,62 @@
 import geopandas as geo_pd
-import matplotlib.pyplot as plt
-import descartes
 import pandas as pd
 import shapely
-import pyproj #pyproj dependency is 1.9.6; check for update 2.0.0 is breaking
 from sodapy import Socrata
 
-def import_geometries():
+ZIPCODES_ID = 'unjd-c2ca'
+NEIGHS_ID = 'y6yq-dbs2'
+
+def import_geometries(ds_id, proj=None):
     '''
     Imports the shapefiles from a given data store on the City of Chicago data
     portal and retuns a geopandas dataframe linking geometries to different
     attributes.
 
     Inputs:
-    id (str): the data set identifier
+    ds_id (str): the data set identifier
     
     Returns: tuple of geopandas dataframes, the first containing zipcode data
         and the second containing neighborhood information
     '''
+    if not proj:
+        proj = {'init': 'epsg:4326'}
+
     client = Socrata('data.cityofchicago.org', 'SB7994tcuBpSSczrQvMx9N0Uy',
                      username="benfogarty@uchicago.edu", password='d5Nut6LrCHL&')
 
-    files = client.get('unjd-c2ca')
-    df = pd.DataFrame(zipcode_files)
+    files = client.get(ds_id)
+    df = pd.DataFrame(files)
     df['the_geom'] = df.the_geom.apply(shapely.geometry.shape)
     df = geo_pd.GeoDataFrame(df, geometry='the_geom')
+    df.crs = proj
+    df.drop(['shape_area', 'shape_len'], axis=1, inplace=True)
     
     return df
 
-def link_zipcodes_neighborhoods():
+def link_zips_neighs(zipcodes, neighborhoods):
     '''
-    Returns a dataframe that links zipcodes to neighborhoods. Each zipcode and
-    each neighborhood may appear more than once in the resulting dataframe as
-    zipcodes may intersect multiple neighborhoods and vice versa.
-
-    Returns: pandas dataframe
-    '''
-    zipcodes = import_geometries('unjd-c2ca')
-    neighborhoods = import_geometries('y6yq-dbs2')
-
-
-def read_shapefiles(filepath):
-    '''
-    Reads the neighborhood shapefiles into a geopandas dataframe
+    Returns a dictionary that links neighborhoods to zipcodes and an updated
+    neighborhoods dataframe coontaining a zipcode column. Each neighborhood
+    may be linked to multiple zipcodes and vice versa as neighborhoods may
+    intersect multiple zipcodes and vice versa.
 
     Inputs:
-        filepath (str): the path to the neighborhood shapefiles
+    zipcodes (GeoPandas GeoDataFrame): describes the boundaries of zipcode areas
+        within the Chicago city limits
+    neighborhoods (GeoPandas GeoDataFrame): describes the boundaries of 98
+        neighborhoods defined withing the Chicago city limits
 
-    Returns: geopandas dataframe describing neighborhoods
+    Returns: tuple of dictionary, GeoPandas GeoDataFrame
     '''
-    return geo_pd.read_file(filepath)
+    merge = geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')\
+                  .filter(['zip', 'pri_neigh', 'the_geom'])
+                  
 
+    neigh_zip_dict = {}
+    for neigh, zips in merge.groupby(['pri_neigh']):
+        neigh_zip_dict[neigh] = list(zips.zip)
+
+    return neigh_zip_dict, merge
 
 def convert_to_geodf(df, long_col, lat_col, proj=None):
     '''
@@ -61,21 +67,19 @@ def convert_to_geodf(df, long_col, lat_col, proj=None):
         df (Pandas DataFrame): the dataframe to convert
         long_col (str): the name of the column containing longitude coordinates
         lat_col (str): the name of the column containing latitude coordinates
-        proj (dict): the pprojection for the GeoDataFrame coordinates
+        proj (dict): the projection for the GeoDataFrame coordinates
     
     Returns (geopandas GeoDataFrame)
     '''
     if not proj:
         proj = {'init': 'epsg:4326'}
-    
-    df['coordinates'] = df.apply(lambda x: (x[long_col], x[lat_col]), axis=1)
-    df = df[df[long_col].notna() & df[lat_col].notna()]
-    df.loc[:,'coordinates'] = df['coordinates'].apply(shapely.geometry.Point)
-    print('here')
+
+    df = df.loc[(df[long_col].notna() & df[lat_col].notna())]    
+    df['coordinates'] = list(zip(df[long_col], df[lat_col]))
+    df.loc[:,'coordinates'] = df.coordinates.apply(shapely.geometry.Point)
     geodf = geo_pd.GeoDataFrame(df, geometry='coordinates')
     geodf.crs = proj
     return geodf
-
 
 def find_neighborhoods(geo_df, neighborhoods):
     '''
@@ -91,6 +95,6 @@ def find_neighborhoods(geo_df, neighborhoods):
     Returns: (GeoPandas GeoDataFrames)
     '''
     geo_df = geo_df.to_crs(neighborhoods.crs)
-    merged = geo_pd.sjoin(geo_df, neighborhoods, how='inner', op='within')
+    merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within')
     return merged
 
