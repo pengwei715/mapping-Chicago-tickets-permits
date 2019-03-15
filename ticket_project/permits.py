@@ -18,25 +18,25 @@ import json
 import csv
 from sodapy import Socrata
 
-
 DATA_DIR = "./data/"
 
-def get_sample(num, filename = "permits_sample.csv"):
+def get_data():
     '''
     Get some sample permit data
     Input:
         num: number of rows 
         filename: the name of the csv file 
     Return:
-        No return, the csv file contains the sample data.
+        Pandas dataframe that contains all the data of permits.
     '''
-    client = Socrata("data.cityofchicago.org", None)
-    if num == -1:
-        num = None
-    results = client.get("erhc-fkv9", limit=num)
-    write_csv(results, filename)
+    client = Socrata('data.cityofchicago.org',
+                 'SB7994tcuBpSSczrQvMx9N0Uy',
+                 username="benfogarty@uchicago.edu",
+                 password="d5Nut6LrCHL&")
+    results = client.get("erhc-fkv9",limit=1041814)
+    return  pd.DataFrame.from_records(results)
 
-def trim_data(input_filename, output_filename):
+def trim_data(df):
     '''
     Find trim the data keep the time and location infor
     Input:
@@ -45,18 +45,18 @@ def trim_data(input_filename, output_filename):
     Return:
         No return, filter the data and store it to csv file
     '''
-    raw = read_csv(input_filename)
-    useful = raw.loc[:,['uniquekey','applicationtype',
-        'applicationtype','applicationstartdate',
+    columns = ['uniquekey','applicationtype',
+        'applicationstartdate',
         'worktype', 'worktypedescription',
-        'applicationfinalizeddate','parkingmeterpostingorbagging',
-        'xcoordinate', 'ycoordinate', 'latitude',
+        'applicationfinalizeddate','xcoordinate', 
+        'ycoordinate', 'latitude',
         'longitude','location','streetclosure',
         'streetnumberfrom','streetnumberto',
-        'direction','streetname']]
-    output = DATA_DIR + output_filename
-    useful.to_csv(output)
-
+        'direction','streetname']
+    raw = df.loc[:,columns]
+    raw = raw[raw['streetclosure'].notna()]
+    clean = raw[raw['streetclosure']!='None']
+    return clean
 
 def read_csv(filename):
     '''
@@ -85,3 +85,14 @@ def write_csv(results,filename):
                 writer.writerow(data)
     except IOError:
         print("I/O error")
+
+def select_by_year(filename, outputfile, year):
+
+    file = DATA_DIR + filename
+
+    raw = pd.read_csv(file)
+
+    mask = raw['applicationstartdate'].str.contains(str(year),na = False)
+    select = raw[mask]
+    csv_file = DATA_DIR + outputfile
+    select.to_csv(csv_file)
