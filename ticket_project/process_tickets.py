@@ -28,7 +28,7 @@ def import_tickets(filename):
     
     df['street_num'] = pd.to_numeric(df.street_num, downcast='unsigned')
     df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
-    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lng, downcast='float')
+    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lag, downcast='float')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
     gc.collect()
 
