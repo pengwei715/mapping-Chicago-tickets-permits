@@ -73,7 +73,7 @@ def collapse_violations_columns(df, output_path):
         violation_codes = df.drop_duplicates(['violation_code',
                                               'violation_description'])
         violation_codes = violation_codes.drop(['issue_date', 'geocoded_address'
-                               ,'geocoded_lng', 'geocoded_lat'], axis=1)
+                               ,'geocoded_lng', 'geocoded_lat', 'fine_amt'], axis=1)
         violation_codes.to_csv(f, index=False)
         
     df = df.drop(['violation_description'], axis=1)

@@ -19,6 +19,10 @@ def import_geometries(ds_id, proj=None):
     ds_id (str): the data set identifier
 
     Returns: geodf from ds_id
+
+    References:
+    geopandas example docs: http://geopandas.org/gallery/create_geopandas_
+        from_pandas.html?highlight=regular%20pandas
     '''
     if not proj:
         proj = {'init': 'epsg:4326'}
@@ -43,6 +47,9 @@ def link_neighs_zips():
     vice versa.
 
     Returns: dictionary
+
+    References:
+    geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
     neighborhoods = import_geometries(NEIGHS_ID)
     zipcodes = import_geometries(ZIPCODES_ID)
@@ -66,6 +73,10 @@ def convert_to_geodf(df, long_col, lat_col, proj=None):
         proj (dict): the projection for the GeoDataFrame coordinates
 
     Returns (geopandas GeoDataFrame)
+
+    References:
+    geopandas example docs: http://geopandas.org/gallery/create_geopandas_
+        from_pandas.html?highlight=regular%20pandas
     '''
     if not proj:
         proj = {'init': 'epsg:4326'}
@@ -89,6 +100,9 @@ def find_neighborhoods(geo_df, neighborhoods):
             the neighborhoods
 
     Returns: (GeoPandas GeoDataFrames)
+
+    References:
+    geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
     geo_df = geo_df.to_crs(neighborhoods.crs)
     merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within',
