@@ -8,7 +8,7 @@ from sodapy import Socrata
 COLUMNS = ['applicationstartdate',
            'worktype',
            'worktypedescription',
-           'applicationfinalizeddate',
+           'applicationenddate',
            'latitude',
            'longitude',
            'streetclosure',
@@ -32,23 +32,26 @@ def get_permits(num=MAXSIZE):
                      username="benfogarty@uchicago.edu",
                      password="d5Nut6LrCHL&")
 
-    conds = '''{} IS NOT NULL AND 
-             {} != "NA" AND 
-             {} != "None" AND
-             {} IS NOT NULL AND
-             {} IS NOT NULL AND
-             {} IS NOT NULL AND
-             {} IS NOT NULL'''\
-             .format('streetclosure',
-                'streetclosure',
-                'streetclosure',
-                'applicationstartdate',
-                'applicationfinalizeddate',
-                'streetnumberfrom',
-                'streetnumberto')
+    conds = '''{} IS NOT NULL AND
+        {} != "NA" AND 
+        {} != "None" AND
+        {} IS NOT NULL AND
+        {} IS NOT NULL AND
+        {} IS NOT NULL AND
+        {} IS NOT NULL'''\
+        .format('streetclosure',
+        'streetclosure',
+        'streetclosure',
+        'applicationstartdate',
+        'applicationenddate',
+        'streetnumberfrom',
+        'streetnumberto')
 
     res = client.get("erhc-fkv9", 
-        select=','.join(COLUMNS), where=conds, limit=num)
+                    select=','.join(COLUMNS), 
+                    where=conds, 
+                    limit=num)
+
     df = pd.DataFrame.from_records(res)
     
     client.close()
@@ -59,7 +62,7 @@ def get_permits(num=MAXSIZE):
     for item in ['latitude', 'longitude']:
         df[item] = pd.to_numeric(df[item], downcast='float')
 
-    for item in ['applicationstartdate', 'applicationfinalizeddate']:
+    for item in ['applicationstartdate', 'applicationenddate']:
         df[item] = pd.to_datetime(df[item])
 
     for item in ['streetclosure', 'streetname']:
