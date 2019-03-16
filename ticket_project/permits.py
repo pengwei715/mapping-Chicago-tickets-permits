@@ -10,8 +10,7 @@ import pdb
 DATA_DIR = "./data/"
 TIT_DIR = DATA_DIR + 'tickets/'
 
-COLUMNS = ['uniquekey',
-           'applicationstartdate',
+COLUMNS = ['applicationstartdate',
            'worktype',
            'worktypedescription',
            'applicationfinalizeddate',
@@ -34,13 +33,23 @@ def get_permits(num=MAXSIZE):
     Return:
         Pandas dataframe that contains all the data of permits.
     '''
+    col_types = {'applicationstartdate': str,
+                 'applicationfinalizeddate': str,
+                 'worktype': 'category',
+                 'streetnumberfrom': int,
+                 'streetnumberto':int,
+                 'streetclosure': 'category',
+                 'streetname': 'category',
+                 'latitude': float,
+                 'longitude': float}
+
     client = Socrata('data.cityofchicago.org',
     	             'SB7994tcuBpSSczrQvMx9N0Uy',
                      username="benfogarty@uchicago.edu",
                      password="d5Nut6LrCHL&")
-
+    pdb.set_trace()
     results = client.get("erhc-fkv9", limit=num)
-    return pd.DataFrame.from_records(results)
+    return pd.DataFrame.from_records(results, dtypes=col_types)
 
 def clean_permits():
     '''
@@ -49,6 +58,11 @@ def clean_permits():
         cleaned dataframe
     '''
     data = get_permits()
+    data['streetnumberfrom'] = pd.to_numeric(data.streetnumberfrom, downcast='unsigned')
+    data['streetnumberto'] = pd.to_numeric(data.streetnumberto, downcast='unsigned')
+    data['latitude'] = pd.to_numeric(df.latitude, downcast='float')
+    data['longitude'] = pd.to_numeric(df.longitude, downcast='float')
+
     raw = dd.from_pandas(data, npartitions=104)
     raw = raw.loc[:, COLUMNS]
     lst = ['applicationstartdate',
@@ -59,9 +73,6 @@ def clean_permits():
 
     for item in ['applicationstartdate', 'applicationfinalizeddate']:
         raw[item] = dd.to_datetime(raw[item])
-
-    for item in ['streetnumberfrom', 'streetnumberto']:
-        raw[item] = raw[item].astype('int32')
 
     clean = raw.compute()
     clean = clean[clean['streetclosure'].notna()]
