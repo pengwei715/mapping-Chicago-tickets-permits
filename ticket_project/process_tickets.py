@@ -5,7 +5,11 @@ import geocoder
 import matplotlib
 import geopandas
 import neighborhoods as nbhds
+import json
+import sys
 
+TICKETS_FILEPATH = 'data/tickets/reduced_tickets.csv'
+VIOLATIONS_FILEPATH = 'data/tickets/violations_dict.csv'
 
 def import_tickets(ticket_file, dictionary_file):
     '''
@@ -25,7 +29,8 @@ def import_tickets(ticket_file, dictionary_file):
                  'street_name': 'category',
                  'zipcode': 'category',
                  'geocoded_lng': float,
-                 'geocoded_lat': float}
+                 'geocoded_lat': float,
+                 'fine_amt': 'category'}
     df = pd.read_csv(ticket_file, dtype=col_types, index_col='ticket_number',
                      usecols=col_types.keys())
 
@@ -123,7 +128,6 @@ def filter_input(df, input_dict):
                 print(fail_str.format(key, val))
     return df
 
-
 def find_similar_tickets(tickets_df, input_dict):
     '''
     find_similar_tickets takes a set of parameters in the following form
@@ -158,3 +162,49 @@ def find_similar_tickets(tickets_df, input_dict):
         heat.plot(ax=base, scheme='quantiles', column='issue_date', legend=True)
 
     matplotlib.pyplot.show()
+
+def go_tickets(parameters):
+    '''
+    Runs the program for the tickets dataset given the specified parameters
+
+    Inputs:
+    parameters (dictonary): dictionary mapping strings of parameter names to
+        strings with parameter values
+    '''
+    print('Loading in tickets dataset...')
+    tickets = import_tickets(TICKETS_FILEPATH, VIOLATIONS_FILEPATH)
+    print('Generating analysis...')
+    find_similar_tickets(tickets, parameters)
+
+
+def go_permits(parameters):
+    '''
+    Runs the program for the tickets dataset given the specified parameters
+
+    Inputs:
+    parameters (dictonary): dictionary mapping strings of parameter names to
+        strings with parameter values
+    '''
+    print('to do')
+
+if __name__ == "__main__":
+    usage = "python3 shrink_tickets.py <path to dataset> <output path>"
+    assert (len(sys.argv) == 2), "JSON string specifying paramaters required"
+    parameters = json.loads(sys.argv[1])
+    assert 'dataset' in parameters and parameters['dataset'] in\
+           set(['tickets', 'permits']),\
+           'Must specify tickets or permits dataset in parameters.'
+    tickets_parameters = set(['dataset', 'neighborhood', 'start_date', 'end_date', 
+                              'location', 'violation'])
+    permits_parameters = set(['dataset', 'neighborhood', 'start_date', 'end_date',
+                              'location', 'type'])
+    if parameters['dataset'] == 'tickets':
+        if set(parameters.keys()) - tickets_parameters:
+            print('Error: Invalid parameter for tickets dataset!')
+        else:
+            go_tickets(parameters)
+    elif parameters['dataset'] == 'permits':
+        if set(parameters.keys()) - tickets_parameters:
+            print('Error: Invalid parameter for permits dataset!')
+        else:
+            go_permits(parameters)

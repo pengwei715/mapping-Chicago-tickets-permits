@@ -16,19 +16,20 @@ def go(input_path, output_path):
     '''
     cols = ['ticket_number', 'issue_date', 'violation_code',
             'violation_description', 'geocoded_address', 'geocoded_lng',
-            'geocoded_lat', ]
+            'geocoded_lat', 'fine_level1_amount']
     col_types = {'ticket_number': str,
                  'issue_date': str,
                  'violation_code': str,
                  'violation_description': str,
                  'geocoded_address': str,
                  'geocoded_lng': float,
-                 'gecoded_lat': float}
+                 'gecoded_lat': float,
+                 'fine_level1_amount': float}
 
     print('Reading in full dataset...')
     df = pd.read_csv(input_path, usecols=cols,
                      dtype=col_types, index_col='ticket_number')
-    
+    df = df.rename({'fine_level1_amount': 'fine_amt'}, axis=1)
     df = filter_by_row(df)
     df = collapse_violations_columns(df, output_path)
     df = convert_address_column(df)
@@ -71,9 +72,8 @@ def collapse_violations_columns(df, output_path):
     with open(output_path + 'violations_dict.csv', 'w') as f:
         violation_codes = df.drop_duplicates(['violation_code',
                                               'violation_description'])
-        violation_codes.drop(['issue_date', 'geocoded_address'
-                               ,'geocoded_lng', 'geocoded_lat'], inplace=True,
-                              axis=1)
+        violation_codes = violation_codes.drop(['issue_date', 'geocoded_address'
+                               ,'geocoded_lng', 'geocoded_lat'], axis=1)
         violation_codes.to_csv(f, index=False)
         
     df = df.drop(['violation_description'], axis=1)
@@ -101,7 +101,7 @@ def convert_address_column(df):
                    1: 'street_dir',
                    2: 'street_name',
                    3: 'zipcode'}
-    df = df.rename(rename_cols, inplace=True)
+    df = df.rename(rename_cols, axis=1)
     df = df.drop(labels='geocoded_address', axis=1)
 
     print('Removing rows with unparsable address data...')
