@@ -39,16 +39,3 @@ def link_permits_tickets(per, tik):
     combo= combo[combo['issue_date'] <= combo['applicationfinalizeddate']]
 
     return combo
-
-
-def top_5(combo):
-    '''
-    Get the top 5 permits worktype lead to tickets
-    Input:
-        combo: dataframe of the linkage data
-    Return:
-        list of string 
-    '''
-    top_5 = combo.groupby('worktypedescription').count().reset_index()
-    top_5 =
-    return list(top_5['worktypedescription'])
