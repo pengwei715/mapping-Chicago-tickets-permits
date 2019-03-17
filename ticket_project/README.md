@@ -12,7 +12,7 @@ together the dataset on permits and tickets, allowing users to see the
 relationship between tickets and permits, including where permits are most
 disruptive to parking patterns.
 
-##Data Sources
+## Data Sources
 Data in this project comes from four sources:
 1. ProPublica's City of Chicago Parking Ticket Dataset (stored locally): 
 https://www.propublica.org/datastore/dataset/chicago-parking-ticket-data
@@ -28,12 +28,12 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neigh
 4. City of Chicago Data Portal's Zip Code Boundaries (API): 
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-Codes/gdcf-axmw
 
-##Requirements
+## Requirements
 To-do
 
-##Running this software
+## Running this software
 
-###First things first
+### First things first
 To avoid storing unnecessarily large CSV files in GitLab, a reduced version of
 the parking tickets dataset should downloaded by navigating to the root of the
 project folder and running the following command:
@@ -65,4 +65,4 @@ transportation department permits. While some permits from before this date are
 available in the transportation department permits dataset, the quality of this
 data is unclear.
 
-###Running the main program
+### Running the main program
