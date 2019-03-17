@@ -24,7 +24,7 @@ MAXSIZE = 1041814 #whole size of data
 
 def get_permits(num=MAXSIZE):
     '''
-    Get some sample permit data
+    Get whole sample permit data
     Input:
         num: number of rows
     Return:
@@ -65,14 +65,18 @@ def get_permits(num=MAXSIZE):
     for item in ['latitude', 'longitude']:
         df[item] = pd.to_numeric(df[item], downcast='float')
 
-    for item in ['applicationstartdate', 'applicationexpiredate', 'applicationfinalizeddate', 'applicationenddate']:
+    for item in ['applicationstartdate', 
+                 'applicationexpiredate', 
+                 'applicationfinalizeddate', 
+                 'applicationenddate']:
         df[item] = pd.to_datetime(df[item])
+
     df['applicationexpiredate'] = np.where(df.applicationexpiredate.isnull(),
                                            df.applicationenddate, 
                                            df.applicationexpiredate)
     df.drop('applicationexpiredate', axis=1)
     df['applicationexpiredate'] = np.where(df.applicationfinalizeddate < \
-                                           df.applicationexpire.ilodate,
+                                           df.applicationexpiredate,
                                            df.applicationfinalizeddate, 
                                            df.applicationexpiredate)
     df.drop('applicationfinalizeddate', axis=1)
