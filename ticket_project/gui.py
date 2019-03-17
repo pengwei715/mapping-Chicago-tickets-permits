@@ -1,24 +1,52 @@
 import tkinter as tk
+import process_tickets
 '''
 Potential way to make gui
 http://effbot.org/tkinterbook/grid.htm
 '''
+TICKETS_FILEPATH = 'data/tickets/sample_tickets_1000.csv'
+VIOLATIONS_FILEPATH = 'data/tickets/violations_dict.csv'
 
-root = tk.Tk()
+class WelcomeDialog():
 
-year_txt = tk.Label(root, text='Year:')
-year_txt.grid(row=0, column=0)
-e = tk.Entry(root)
-e.grid(row=0, column=1)
+    def __init__(self):
+        self.window = tk.Tk()
+        
+        txt_label = tk.Label(self.window, text=('Tickets or permits data? (for'+
+                                           ' linked data, choose tickets)'))
+        txt_label.grid(row=0, column=1, columnspan=2)
 
-def go():
+        tickets_button = tk.Button(self.window, text="Tickets",
+                                   command=self.select_tickets)
+        tickets_button.grid(row=1, column=1, rowspan=5, columnspan=2)
 
-    button = tk.Button(root, text='Query',
-                            command=build_dict)
+        permits_button = tk.Button(self.window, text="Permits",
+                                   command=self.select_permits)
+        permits_button.grid(row=1, column=2, rowspan=5, columnspan=2)
+
+        self.window.mainloop()
 
 
-    button.grid(row=1, column=0, columnspan=4)
-    root.mainloop()
+    def select_tickets(self):
+        print('Selected tickets')
+        self.window.withdraw()
+        message = tk.Toplevel()
+        loading_label = tk.Message(message, text='Loading dataset, please wait')
+        loading_label.grid(row=0, column=0)
 
-def build_dict():
-    print(e.get())
+        tickets = process_tickets.import_tickets(TICKETS_FILEPATH, VIOLATIONS_FILEPATH)
+        message.withdraw()
+        self.window.destroy()
+
+
+
+    def select_permits(self):
+        print('Selected permits')
+'''
+class TicketsDialog()
+
+    def __init__(self):
+'''
+
+if __name__ == '__main__':
+   welcome = WelcomeDialog()
