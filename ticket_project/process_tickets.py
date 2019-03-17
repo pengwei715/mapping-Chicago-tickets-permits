@@ -108,7 +108,7 @@ def filter_input(df, input_dict):
         	neigh_dict = nbhds.link_neighs_zips()
         	if val in neigh_dict:
         		df = df[df[column_dict[key]].isin(neigh_dict[val])]
-        		print(success_str.format('approximate filtering for ' + val, \
+        		print(success_str.format('zipcode approximation for ' + val, \
         								 row_nums, df.shape[0]))
         	else:
         		print(fail_str.format(key, val))
@@ -161,6 +161,11 @@ def find_similar_tickets(tickets_df, input_dict):
     geocoded = link_with_neighborhoods(filtered)
 
     if 'location' in input_dict or 'neighborhood' in input_dict:
+        if 'neighborhood' in input_dict:
+        	val = input_dict['neighborhood']
+        	geocoded = geocoded[geocoded['pri_neigh'] == val]
+        	print('Exact filtering on', val, geocoded.shape[0], 'tickets remain')
+
         filtered_nbhd = \
             nbhd[nbhd['pri_neigh'].isin(geocoded.pri_neigh.unique())]
         base = filtered_nbhd.plot(color='white', edgecolor='black')
@@ -169,12 +174,11 @@ def find_similar_tickets(tickets_df, input_dict):
     else: #citywide
         fig, ax = plt.subplots(1)
         heat = geocoded.dissolve(by='pri_neigh', aggfunc='count')
-        heat.drop('coordinates', axis=1)
-        heat = nbhd.merge(heat, on='pri_neigh',how='left')
+        heat = nbhd.merge(heat, on='pri_neigh',how='left').fillna(0)
         heat.plot(ax=ax, cmap='coolwarm', column='issue_date', linewidth=0.8,
                   linestyle='-')
         ax.axis('off')
-        ax.set_title('Matching Tickets by Neighborhood')
+        ax.set_title('Ticket Heat Map')
         n_min = min(heat.issue_date)
         n_max = max(heat.issue_date)
         leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
@@ -182,6 +186,8 @@ def find_similar_tickets(tickets_df, input_dict):
         leg._A = []
         colorbar = fig.colorbar(leg)
 
+    plt.figtext(0.5, 0.01, 'Stats about ticket similarity score', wrap=True,\
+    			horizontalalignment='center', fontsize=12)
     plt.show()
 
 def go_tickets(parameters):
