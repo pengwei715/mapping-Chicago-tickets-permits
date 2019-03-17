@@ -39,8 +39,8 @@ def go(input_path, output_path):
 
 def filter_by_row(df):
     '''
-    Removes rows from the dataset occurring before 1 January 2012, as this time
-    is inconsistently covered in the permits dataset.
+    Removes rows from the dataset occurring before 13 July 2015, as this time
+    may be inconsistently covered in the permits dataset.
 
     Inputs:
     df (Pandas dataframe): the dataset of tickets
@@ -49,7 +49,7 @@ def filter_by_row(df):
     '''
     print('Filtering dataset...')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
-    time_before = pd.to_datetime('1/1/2012 0:00')
+    time_before = pd.to_datetime('7/13/2015 0:00')
     mask = df['issue_date'] > time_before
     df = df.loc[mask]
 
