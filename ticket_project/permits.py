@@ -63,18 +63,9 @@ def get_permits(num=MAXSIZE):
     date_cols = ['applicationstartdate', 'applicationexpiredate', 
                  'applicationfinalizeddate', 'applicationenddate']
 
-<<<<<<< HEAD
     for item in date_cols:
         df[item] = pd.to_datetime(df[item])
-    
-=======
-    for item in ['applicationstartdate', 
-                 'applicationexpiredate', 
-                 'applicationfinalizeddate', 
-                 'applicationenddate']:
-        df[item] = pd.to_datetime(df[item])
 
->>>>>>> fcf667ea453d00726e3ebbea7637b5dfb348a12c
     df['applicationexpiredate'] = np.where(df.applicationexpiredate.isnull(),
                                            df.applicationenddate, 
                                            df.applicationexpiredate)
