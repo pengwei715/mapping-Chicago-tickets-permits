@@ -53,7 +53,7 @@ this module can be tested on the VM. This module can be accessed with the
 following command:
 >>>
 python3 shrink_tickets.py <<path to full dataset (or sample>> <<output dir>>
->>
+>>>
 The results will be a reduced size CSV file of parking tickets data and a CSV
 mapping violation codes to violation descriptions.
 
