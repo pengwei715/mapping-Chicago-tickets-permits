@@ -29,7 +29,23 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neigh
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-Codes/gdcf-axmw
 
 ## Requirements
-To-do
+The following packages are needed to run this software:
+
+-csv, version=
+-gc, version=
+-pandas, version=
+-matplotlib, version=
+-geopandas, version=
+-re, version=
+-datetime, version=
+-numpy, version=
+-shapely, version=
+-Socrata, version=
+-rtree, version=
+-geocoder, version=
+-json, version=
+-sys, version=
+-mapclassify, version=
 
 ## Running this software
 
