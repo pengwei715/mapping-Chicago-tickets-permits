@@ -5,6 +5,7 @@ Clean the data
 import pandas as pd
 from sodapy import Socrata
 import numpy as np
+from datetime import datetime
 
 MAXSIZE = 1041814 #whole size of data
 
@@ -41,7 +42,7 @@ def get_permits(num=MAXSIZE):
         {} IS NOT NULL AND
         {} IS NOT NULL AND
         {} IS NOT NULL AND
-        {} IS NOT NULL '''\
+        {} IS NOT NULL'''\
         .format('streetclosure',
         'streetclosure',
         'streetclosure',
@@ -74,6 +75,6 @@ def get_permits(num=MAXSIZE):
                                            df.applicationfinalizeddate, 
                                            df.applicationexpiredate)
     df = df.drop(['applicationenddate', 'applicationfinalizeddate'], axis=1)
-
-    return df
+    cutoff = datetime.strptime('07-13-2015', '%m-%d-%Y')
+    return df[df.applicationexpiredate >= cutoff]
 

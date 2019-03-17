@@ -1,6 +1,6 @@
 '''
 link two dataframe together
-We only care about the violation_code 'PARKING/STANDING PROHIBITED ANYTIME'
+We only care about the violation_code 
 with full streetclosure during the permits time and in the permits area
 '''
 
@@ -20,7 +20,10 @@ def link_permits_tickets(per, tik):
         combo: pandas dataframe contains the large joint table
     '''
     per = per[per['streetclosure'] == 'Full']
-    tik = tik[tik['violation_code'] == 'NO STANDING/PARKING TIME RESTRICTED']
+    type_lst = ['NO STANDING/PARKING TIME RESTRICTED',
+                'PARKING/STANDING PROHIBITED ANYTIME' ]
+    tik = tik[tik['violation_code'].isin(type_lst) ]
+    tik = tik[tik['violation_code']=='PARKING/STANDING PROHIBITED ANYTIME']
     tik['upper_streetname'] = tik.street_name.str.extract(r'(.+)\s.+\Z',
                                                           expand=True)
     tik['upper_streetname'] = tik.upper_streetname.str.upper()
