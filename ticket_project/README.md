@@ -37,9 +37,9 @@ To-do
 To avoid storing unnecessarily large CSV files in GitLab, a reduced version of
 the parking tickets dataset should downloaded by navigating to the root of the
 project folder and running the following command:
->>>
+```
 sh get_files.sh
->>>
+```
 This will download the necessary files from box along with a number of random
 samples of the tickets dataset for testing purposes. 
 
@@ -51,9 +51,9 @@ and ran this module on our personal machines. A sample of the entire 19GB
 is provided in the data/raw/full_dataset_sample, so that the functionality of
 this module can be tested on the VM. This module can be accessed with the
 following command:
->>>
+```
 python3 shrink_tickets.py <path to full dataset (or sample> <output dir>
->>>
+```
 The results will be a reduced size CSV file of parking tickets data and a CSV
 mapping violation codes to violation descriptions.
 
