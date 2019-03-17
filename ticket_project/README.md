@@ -16,7 +16,7 @@ disruptive to parking patterns.
 Data in this project comes from four sources:
 1. ProPublica's City of Chicago Parking Ticket Dataset (stored locally): 
 https://www.propublica.org/datastore/dataset/chicago-parking-ticket-data
-(n.b. this dataset is 19.4GB in size and is filtered considerably for use in
+(nb, this dataset is 19.4GB in size and is filtered considerably for use in
 this project)
 
 2. City of Chicago Data Portal's Transportation Department Permits Dataset (API):
@@ -29,24 +29,26 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neigh
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-Codes/gdcf-axmw
 
 ## Requirements
-The following packages are needed to run this software:
+The following Python packages are needed to run this software:
 
--csv, version=
--gc, version=
--pandas, version=
--matplotlib, version=
--geopandas, version=
--re, version=
--datetime, version=
--numpy, version=
--shapely, version=
--Socrata, version=
--rtree, version=
--geocoder, version=
--json, version=
--sys, version=
--mapclassify, version=
+- csv, version=
+- gc, version=
+- pandas, version=
+- matplotlib, version=
+- geopandas, version=
+- re, version=
+- datetime, version=
+- numpy, version=
+- shapely, version=
+- Socrata, version=
+- rtree, version=
+- geocoder, version=
+- json, version=
+- sys, version=
+- mapclassify, version=
 
+Additionally, rtree requires libspatialindex library, avaliable at https://libspatialindex.org/.
+Our software uses version 1.8.5.
 ## Running this software
 
 ### First things first
