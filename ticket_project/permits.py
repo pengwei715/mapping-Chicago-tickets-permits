@@ -6,20 +6,6 @@ import pandas as pd
 from sodapy import Socrata
 import numpy as np
 
-COLUMNS = ['applicationstartdate',
-           'worktype',
-           'applicationfinalizeddate',
-           'worktypedescription',
-           'applicationexpiredate',
-           'latitude',
-           'longitude',
-           'streetclosure',
-           'streetnumberfrom',
-           'streetnumberto',
-           'direction',
-           'streetname', 
-           'applicationenddate']
-
 MAXSIZE = 1041814 #whole size of data
 
 def get_permits(num=MAXSIZE):
@@ -30,6 +16,20 @@ def get_permits(num=MAXSIZE):
     Return:
         Pandas dataframe that contains all useful data of permits.
     '''
+    coltypes = {'applicationstartdate': str,
+                'applicationexpiredate': str,
+                'applicationenddate': str,
+                'applicationfinalizeddate': str,
+                'worktype': 'category',
+                'worktypedescription': str,
+                'latitude': float,
+                'longitude': float,
+                'streetclosure': 'category',
+                'streetnumberfrom': int,
+                'streetnumberto': int,
+                'direction': 'category',
+                'streetname': 'category'}
+
     client = Socrata('data.cityofchicago.org',
                      'SB7994tcuBpSSczrQvMx9N0Uy',
                      username="benfogarty@uchicago.edu",
@@ -51,34 +51,29 @@ def get_permits(num=MAXSIZE):
         'applicationenddate')
 
     res = client.get("erhc-fkv9", 
-                    select=','.join(COLUMNS), 
+                    select=','.join(coltypes.keys()), 
                     where=conds, 
                     limit=num)
 
-    df = pd.DataFrame.from_records(res)
+    df = pd.DataFrame.from_records(res)\
+                     .astype(coltypes)
     
     client.close()
 
-    for item in ['streetnumberfrom', 'streetnumberto']:
-        df[item] = pd.to_numeric(df[item], downcast='unsigned')
+    date_cols = ['applicationstartdate', 'applicationexpiredate', 
+                 'applicationfinalizeddate', 'applicationenddate']
 
-    for item in ['latitude', 'longitude']:
-        df[item] = pd.to_numeric(df[item], downcast='float')
-
-    for item in ['applicationstartdate', 'applicationexpiredate', 'applicationfinalizeddate', 'applicationenddate']:
+    for item in date_cols:
         df[item] = pd.to_datetime(df[item])
+    
     df['applicationexpiredate'] = np.where(df.applicationexpiredate.isnull(),
                                            df.applicationenddate, 
                                            df.applicationexpiredate)
-    df.drop('applicationexpiredate', axis=1)
     df['applicationexpiredate'] = np.where(df.applicationfinalizeddate < \
-                                           df.applicationexpire.ilodate,
+                                           df.applicationexpiredate,
                                            df.applicationfinalizeddate, 
                                            df.applicationexpiredate)
-    df.drop('applicationfinalizeddate', axis=1)
-
-    for item in ['streetclosure', 'streetname']:
-        df[item] = df[item].astype('category')
+    df = df.drop(['applicationenddate', 'applicationfinalizeddate'], axis=1)
 
     return df
 
