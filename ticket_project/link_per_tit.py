@@ -23,7 +23,9 @@ def link_permits_tickets(per, tik):
     type_lst = ['NO STANDING/PARKING TIME RESTRICTED',
                 'PARKING/STANDING PROHIBITED ANYTIME' ]
     tik = tik[tik['violation_code'].isin(type_lst) ]
-    tik = tik[tik['violation_code']=='PARKING/STANDING PROHIBITED ANYTIME']
+    cutoff = datetime.strptime('07-13-2015', '%m-%d-%Y')
+    #tik = tik[tik['violation_code']=='PARKING/STANDING PROHIBITED ANYTIME']
+    tik = tik[tik.issue_date >= cutoff]
     tik['upper_streetname'] = tik.street_name.str.extract(r'(.+)\s.+\Z',
                                                           expand=True)
     tik['upper_streetname'] = tik.upper_streetname.str.upper()
