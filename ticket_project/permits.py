@@ -4,18 +4,21 @@ Clean the data
 '''
 import pandas as pd
 from sodapy import Socrata
+import numpy as np
 
 COLUMNS = ['applicationstartdate',
            'worktype',
+           'applicationfinalizeddate',
            'worktypedescription',
-           'applicationenddate',
+           'applicationexpiredate',
            'latitude',
            'longitude',
            'streetclosure',
            'streetnumberfrom',
            'streetnumberto',
            'direction',
-           'streetname']
+           'streetname', 
+           'applicationenddate']
 
 MAXSIZE = 1041814 #whole size of data
 
@@ -38,14 +41,14 @@ def get_permits(num=MAXSIZE):
         {} IS NOT NULL AND
         {} IS NOT NULL AND
         {} IS NOT NULL AND
-        {} IS NOT NULL'''\
+        {} IS NOT NULL '''\
         .format('streetclosure',
         'streetclosure',
         'streetclosure',
         'applicationstartdate',
-        'applicationenddate',
         'streetnumberfrom',
-        'streetnumberto')
+        'streetnumberto',
+        'applicationenddate')
 
     res = client.get("erhc-fkv9", 
                     select=','.join(COLUMNS), 
@@ -62,8 +65,17 @@ def get_permits(num=MAXSIZE):
     for item in ['latitude', 'longitude']:
         df[item] = pd.to_numeric(df[item], downcast='float')
 
-    for item in ['applicationstartdate', 'applicationenddate']:
+    for item in ['applicationstartdate', 'applicationexpiredate', 'applicationfinalizeddate', 'applicationenddate']:
         df[item] = pd.to_datetime(df[item])
+    df['applicationexpiredate'] = np.where(df.applicationexpiredate.isnull(),
+                                           df.applicationenddate, 
+                                           df.applicationexpiredate)
+    df.drop('applicationexpiredate', axis=1)
+    df['applicationexpiredate'] = np.where(df.applicationfinalizeddate < \
+                                           df.applicationexpire.ilodate,
+                                           df.applicationfinalizeddate, 
+                                           df.applicationexpiredate)
+    df.drop('applicationfinalizeddate', axis=1)
 
     for item in ['streetclosure', 'streetname']:
         df[item] = df[item].astype('category')

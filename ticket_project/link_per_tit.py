@@ -32,11 +32,13 @@ def link_permits_tickets(per, tik):
     per['streetnumberfrom'] = np.floor(per['streetnumberfrom']/100)*100
     per['streetnumberto'] = np.ceil(per['streetnumberto']/100)*100
 
+    tik = tik.reset_index()
     combo = tik.merge(per, on = ['upper_streetname','street_dir'])
+               .drop_duplicates('index')
     combo= combo[combo['streetnumberfrom'] <= combo['street_num']]
     combo= combo[combo['streetnumberto'] >= combo['street_num']]
     combo= combo[combo['issue_date'] >= combo['applicationstartdate']]
-    combo= combo[combo['issue_date'] <= combo['applicationenddate']]
+    combo= combo[combo['issue_date'] <= combo['applicationexpiredate']]
     combo.to_csv('result.csv')
     return combo
 

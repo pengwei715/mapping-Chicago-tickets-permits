@@ -2,7 +2,8 @@ import csv
 import gc
 import pandas as pd
 import geocoder
-import matplotlib
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import geopandas
 import neighborhoods as nbhds
 import json
@@ -20,6 +21,10 @@ def import_tickets(ticket_file, dictionary_file):
     filename (str): the path to a tickets dataset
 
     Returns: Pandas dataframe
+
+    References:
+    Reducing dataframe memory usage: https://www.dataquest.io/blog/
+        pandas-big-data
     '''
     col_types = {'ticket_number': str,
                  'issue_date': str,
@@ -142,6 +147,14 @@ def find_similar_tickets(tickets_df, input_dict):
                                'location' : ex. 'number street Chicago, IL'
                                'violation' : 'violation_code'
     returns: df
+
+    References:
+    Generating colormaps: https://towardsdatascience.com/lets-make-a-map-using-
+        geopandas-pandas-andg-matplotlib-to-make-a-chloropleth-map-dddc31c1983d
+    matplotlib docs: https://matplotlib.org/tutorials/colors/colormaps.html
+    geopandas mapping docs: http://geopandas.org/mapping.html
+    geopandas dissolve docs: http://geopandas.org/aggregation_with_dissolve.html
+    geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
     filtered = filter_input(tickets_df, input_dict)
     nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
@@ -154,14 +167,22 @@ def find_similar_tickets(tickets_df, input_dict):
         geocoded.plot(ax=base)
 
     else: #citywide
-        base = nbhd.plot(color='white', edgecolor='black')
+        fig, ax = plt.subplots(1)
         heat = geocoded.dissolve(by='pri_neigh', aggfunc='count')
         heat.drop('coordinates', axis=1)
-        heat = geopandas.GeoDataFrame(nbhd.join(heat, on='pri_neigh', \
-            how='left', rsuffix='_heat'), geometry='the_geom', crs=nbhd.crs)
-        heat.plot(ax=base, scheme='quantiles', column='issue_date', legend=True)
+        heat = nbhd.merge(heat, on='pri_neigh',how='left')
+        heat.plot(ax=ax, cmap='coolwarm', column='issue_date', linewidth=0.8,
+                  linestyle='-')
+        ax.axis('off')
+        ax.set_title('Matching Tickets by Neighborhood')
+        n_min = min(heat.issue_date)
+        n_max = max(heat.issue_date)
+        leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
+                                    vmin=n_min, vmax=n_max))
+        leg._A = []
+        colorbar = fig.colorbar(leg)
 
-    matplotlib.pyplot.show()
+    plt.show()
 
 def go_tickets(parameters):
     '''
