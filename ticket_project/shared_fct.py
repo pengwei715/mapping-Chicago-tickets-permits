@@ -2,19 +2,20 @@
 Common functions of the whole software
 '''
 
-import pandas as pd
 import re
-from datetime import datetime
-import numpy as np
-import neighborhoods as nbhds
-import data_loader
-import geocoder
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import geopandas
 import json
 import sys
 import csv
+from datetime import datetime
+import pandas as pd
+import numpy as np
+import geocoder
+import geopandas
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import neighborhoods as nbhds
+import data_loader
+
 
 #columns of tickets data that users can filter
 TICKET_COLUMNS = {'violation': 'violation_code',
@@ -29,7 +30,7 @@ PERMIT_COLUMNS = {'worktype': 'worktypedescription',
                   'location': ['longitude', 'latitude'],
                   'closing_type': 'streetclosure'}
 
-def link_permits_tickets(per, tik1):
+def link_permits_tickets(per, tik):
     '''
     Filter the tickets on two violation type then
     Join two dataframe together based on the location and issue time
@@ -41,14 +42,11 @@ def link_permits_tickets(per, tik1):
         combo: pandas dataframe contains the large joint table
     '''
     per = per[per['streetclosure'] == 'Full']
-<<<<<<< HEAD
-    tik = tik1[tik1['violation_code'].isin['NO STANDING/PARKING TIME RESTRICTED',
-                                           'PARKING/STANDING PROHIBITED ANYTIME']]
-=======
-    tik = tik1[tik1['violation_code'].isin(['NO STANDING/PARKING TIME RESTRICTED',
-               'PARKING/STANDING PROHIBITED ANYTIME'])].copy()
-    
->>>>>>> ca57278ebb1020804df85813a362055f3322671a
+
+    tik = tik[tik.violation_code.isin(['NO STANDING/PARKING TIME RESTRICTED',
+                                       'PARKING/STANDING PROHIBITED ANYTIME'])]\
+                                .copy() #shallow copy, required to avoid warning
+
     tik['upper_streetname'] = tik.street_name.str.extract(r'(.+)\s.+\Z')
     tik['upper_streetname'] = tik.upper_streetname.str.upper()
     tik['upper_streetname'] = tik['upper_streetname'].astype('category')
@@ -70,7 +68,7 @@ def link_permits_tickets(per, tik1):
 
     return combo
 
-def link_with_neighborhoods(df, lng_col, lat_col):
+def link_with_neighborhoods(dataframe, lng_col, lat_col):
     '''
     Helper function to get a geocoded dataframe
 
@@ -80,7 +78,7 @@ def link_with_neighborhoods(df, lng_col, lat_col):
         A dataframe that is geocoded
     '''
     nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
-    geodf = nbhds.convert_to_geodf(df, lng_col, lat_col)
+    geodf = nbhds.convert_to_geodf(dataframe, lng_col, lat_col)
     return nbhds.find_neighborhoods(geodf, nbhd)
 
 def filter_input(df, input_dict, column_dict, db_type):
@@ -251,14 +249,15 @@ def go_linked(parameters):
         strings with parameter values
     '''
 
-    if set(parameters.keys()) - (set(PERMIT_COLUMNS.keys()) | 
-    	set(TICKET_COLUMNS.keys())):
+    if set(parameters.keys())\
+       - (set(PERMIT_COLUMNS.keys())\
+       | set(TICKET_COLUMNS.keys())):
         print('Error: Invalid parameter for linked dataset!')
     else:
         print('Loading the tickets dataset...')
         tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH,
                                              data_loader.VIOLATIONS_FILEPATH)
-        tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')   
+        tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')
 
         print('Loading the permits dataset...')
         pers = data_loader.get_permits('07-13-2015')
@@ -275,7 +274,7 @@ if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <dataset> <parameters>"
     assert (len(sys.argv) == 3), \
            ('Please specify what data set to use',
-            '(tickets, permits, or links)', 
+            '(tickets, permits, or links)',
             'and a JSON string specifying parameters')
     dataset = sys.argv[1]
     assert dataset in ['tickets', 'permits', 'linked'], \
