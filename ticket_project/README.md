@@ -154,7 +154,7 @@ Valid choices of dataset are:
 Valid parameters for each data set are as follows:
 - tickets
  - "violation": the reason for which a ticket was issued;  full list of valid
- entries is avaliable in inputs/violation_types.txt.
+ entries is available in inputs/violation_types.txt.
  - "start_date": a lower limit (inclusive) on the date a ticket was issued; must
  be of the form "YYYY-MM-DD".
  - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
