@@ -90,9 +90,9 @@ which makes it difficult to process within a VM or the machines in CSIL (default
 memory quota is 5GB) and difficult to share between computers. To address this,
 we wrote a module called shrink_tickets.py that reduces the size of our dataset,
 and ran this module on our personal machines. A sample of the entire 19GB
-is provided in the data/raw/full_dataset_sample, so that the functionality of
-this module can be tested on the VM. This module can be accessed with the
-following command:
+is provided in the data/sample/full_dataset_sample.csv, so that the 
+functionality of this module can be tested on the VM. This module can be
+accessed from the terminal with the following command:
 ```
 python3 shrink_tickets.py <path to full dataset (or sample)> <output dir>
 ```
