@@ -1,5 +1,7 @@
 '''
-neighborhoods XXX
+neighborhoods holds geocoding functions which use Chicago APIs
+to gather information, project coordinates into neighborhoods,
+and geocode dataframes
 '''
 import geopandas as geo_pd
 import pandas as pd
@@ -82,8 +84,6 @@ def convert_to_geodf(df, long_col, lat_col, proj=None):
         proj = {'init': 'epsg:4326'}
 
     df = df[(df[long_col].notna() & df[lat_col].notna())]
-    print(len(df[long_col]))
-    print(len(df[lat_col]))
     df['coordinates'] = list(zip(df[long_col], df[lat_col]))
     df.loc[:, 'coordinates'] = df.coordinates.apply(shapely.geometry.Point)
     geodf = geo_pd.GeoDataFrame(df, geometry='coordinates')
