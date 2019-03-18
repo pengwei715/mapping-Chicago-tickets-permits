@@ -1,10 +1,15 @@
-
-import gc
+'''
+data_loader stores helper functions which convert
+raw datasets into specific forms so that they can be
+analyzed
+'''
+import csv
+from datetime import datetime
 import pandas as pd
 from sodapy import Socrata
+import gc
 import numpy as np
-from datetime import datetime
-import csv
+
 
 MAXSIZE = 1041814 #whole size of data
 TICKETS_FILEPATH = 'data/reduced_tickets.csv'
@@ -88,44 +93,37 @@ def get_permits(start_date):
                      'SB7994tcuBpSSczrQvMx9N0Uy',
                      username="benfogarty@uchicago.edu",
                      password="d5Nut6LrCHL&")
+    conds_str = '''{} IS NOT NULL AND
+                   {} != "NA" AND 
+                   {} != "None" AND
+                   {} IS NOT NULL AND
+                   {} IS NOT NULL AND
+                   {} IS NOT NULL AND
+                   {} IS NOT NULL'''
 
-    conds = '''{} IS NOT NULL AND
-        {} != "NA" AND 
-        {} != "None" AND
-        {} IS NOT NULL AND
-        {} IS NOT NULL AND
-        {} IS NOT NULL AND
-        {} IS NOT NULL'''\
-        .format('streetclosure',
-        'streetclosure',
-        'streetclosure',
-        'applicationstartdate',
-        'streetnumberfrom',
-        'streetnumberto',
-        'applicationenddate')
+    conds = conds_str.format('streetclosure', 'streetclosure', 'streetclosure',\
+                             'applicationstartdate', 'streetnumberfrom',\
+                             'streetnumberto', 'applicationenddate')
 
-    res = client.get("erhc-fkv9", 
-                    select=','.join(coltypes.keys()), 
-                    where=conds, 
-                    limit=MAXSIZE)
+    res = client.get("erhc-fkv9", select=','.join(coltypes.keys()),\
+                     where=conds, limit=MAXSIZE)
 
-    df = pd.DataFrame.from_records(res)\
-                     .astype(coltypes)
-    
+    df = pd.DataFrame.from_records(res).astype(coltypes)
+
     client.close()
 
-    date_cols = ['applicationstartdate', 'applicationexpiredate', 
+    date_cols = ['applicationstartdate', 'applicationexpiredate',
                  'applicationfinalizeddate', 'applicationenddate']
 
     for item in date_cols:
         df[item] = pd.to_datetime(df[item])
 
     df['applicationexpiredate'] = np.where(df.applicationexpiredate.isnull(),
-                                           df.applicationenddate, 
+                                           df.applicationenddate,
                                            df.applicationexpiredate)
     df['applicationexpiredate'] = np.where(df.applicationfinalizeddate < \
                                            df.applicationexpiredate,
-                                           df.applicationfinalizeddate, 
+                                           df.applicationfinalizeddate,
                                            df.applicationexpiredate)
     df = df.drop(['applicationenddate', 'applicationfinalizeddate'], axis=1)
     cutoff = datetime.strptime(start_date, '%m-%d-%Y')
