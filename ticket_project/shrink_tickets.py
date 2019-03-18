@@ -1,6 +1,10 @@
+'''
+Shrink the tickets data set
+'''
+
 import sys
-import pandas as pd
 import csv
+import pandas as pd
 
 def go(input_path, output_path):
     '''
@@ -72,10 +76,13 @@ def collapse_violations_columns(df, output_path):
     with open(output_path + 'violations_dict.csv', 'w') as f:
         violation_codes = df.drop_duplicates(['violation_code',
                                               'violation_description'])
-        violation_codes = violation_codes.drop(['issue_date', 'geocoded_address'
-                               ,'geocoded_lng', 'geocoded_lat', 'fine_amt'], axis=1)
+        violation_codes = violation_codes.drop(['issue_date',
+                                                'geocoded_address',
+                                                'geocoded_lng',
+                                                'geocoded_lat',
+                                                'fine_amt'], axis=1)
         violation_codes.to_csv(f, index=False)
-        
+
     df = df.drop(['violation_description'], axis=1)
 
     return df
@@ -89,7 +96,7 @@ def convert_address_column(df):
 
     Inputs:
     df (Pandas dataframe): the dataset of tickets
-    
+
     Returns: Pandas dataframe
     '''
     print('Converting address columns...')
@@ -107,7 +114,7 @@ def convert_address_column(df):
     print('Removing rows with unparsable address data...')
     df = df[df.zipcode.notna() & df.street_num.notna()\
             & df.street_dir.notna()]
-    
+
     return df
 
 def output_data(df, output_path):
