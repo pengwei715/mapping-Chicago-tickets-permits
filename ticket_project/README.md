@@ -41,7 +41,7 @@ but for consistent coverage we suggest only querying for dates after
 7/13/2015.
 
 Understanding which tickets are linked with permits turns out to be quite
-difficult. A naieve attempt to link any ticket with any permits that overlap
+difficult. A naive attempt to link any ticket with any permits that overlap
 in location and time yields a number of tickets unrelated to parking, such as
 having expired or missing license plates. Since our project was specifically
 interested in how permits limit parking and result in tickets as a result of
