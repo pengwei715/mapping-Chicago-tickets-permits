@@ -106,7 +106,8 @@ accessed from the terminal with the following command:
 python3 shrink_tickets.py <path to full dataset (or sample)> <output dir>
 ```
 The results will be a reduced size CSV file of parking tickets data and a CSV
-mapping violation codes to violation descriptions.
+mapping violation codes to violation descriptions. Be careful not to set the
+output directory such that it will overwrite any dataset downloaded earlier.
 
 The reduction in size is achieved by eliminating a number of columns that we
 don't need for our analysis or that are duplicated and by filtering tickets
