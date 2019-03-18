@@ -6,6 +6,7 @@ import pandas as pd
 from sodapy import Socrata
 import numpy as np
 from datetime import datetime
+import shared_fct as shared
 
 MAXSIZE = 1041814 #whole size of data
 
@@ -79,3 +80,12 @@ def get_permits(start_date):
     cutoff = datetime.strptime(start_date, '%m-%d-%Y')
     return df[df.applicationexpiredate >= cutoff]
 
+def filter_permits(df, input_dict):
+    column_dict = {'worktype': 'worktypedescription',
+               'start_date': 'applicationexpiredate',
+               'end_date': 'applicationexpiredate',
+               'location': ['longitude', 'latitude'],
+               'closing_type': 'streetclosure',
+               'streetname': 'streetname'}
+
+    return shared.filter_input(df, input_dict, column_dict, 'permits')
