@@ -40,6 +40,19 @@ Portal. Technically, there is no lower or upper limit on the dates it covers,
 but for consistent coverage we suggest only querying for dates after
 7/13/2015.
 
+Understanding which tickets are linked with permits turns out to be quite
+difficult. A naieve attempt to link any ticket with any permits that overlap
+in location and time yields a number of tickets unrelated to parking, such as
+having expired or missing license plates. Since our project was specifically
+interested in how permits limit parking and result in tickets as a result of
+limiting parking, we ended up making applying a number of assumptions (made
+a priori and in consultation with the data) to hopefull get an accurate number
+of tickets directly linked with permits limiting parking spaces. In particular,
+when linking the two datasets, we limited to tickets whose violations is either
+"PARKING/STANDING PROHIBITED ANYTIME" or "NO STANDING/PARKING TIME RESTRICTED",
+and we limited the permits data to permits allowing for a full closure of the
+street.
+
 ## Requirements
 The following Python packages are needed to run this software:
 
@@ -108,34 +121,32 @@ Valid choices of dataset are:
 
 Valid paramters for each data set are as follows:
 - tickets
- - "violation": the reason for which a tickets was issued
-  - A full list of valid entries is avaliable in inputs/violation_types.txt
- - "start_date": a lower limit (inclusive) on the date a ticket was issued
-  - Must be of the form "YYYY-MM-DD"
- - "end_date": an upper limit (exclusive) on the date a ticket was issued
-  - Must be of the form "YYYY-MM-DD"
- - "location": a location to find tickets within a four square miles box of
-  - Must be a Chicago, IL address, submitted in the form "<Street Number>
-	<Street Direction> <Street Name>"
-  - For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
-E. 60th Street"
- - "neighborhood": the name of a Chicago neighborhood
-  - A full list of valid entries is available in inputs/neighborhood_names.txt
+ - "violation": the reason for which a tickets was issued;  full list of valid
+ entries is avaliable in inputs/violation_types.txt.
+ - "start_date": a lower limit (inclusive) on the date a ticket was issued; must
+ be of the form "YYYY-MM-DD".
+ - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
+ be of the form "YYYY-MM-DD".
+ - "location": a location to find tickets within a four square miles box of. 
+ Must be a Chicago, IL address, submitted in the form "<Street Number>
+<Street Direction> <Street Name>". For example, 1307 E. 60th Street,
+Chicago, IL 60637 would be passed as "6031 E. 60th Street".
+ - "neighborhood": the name of a Chicago neighborhood. A full list of valid
+ entries is available in inputs/neighborhood_names.txt.
 - permits
- - "worktype": the reason for a ticket
-  - A full list of valid entries is available in inputs/work_types.txt
- - "start_date": a lower limit (inclusive) on the date a ticket was issued
-  - Must be of the form "YYYY-MM-DD"
- - "end_date": an upper limit (exclusive) on the date a ticket was issued
-  - Must be of the form "YYYY-MM-DD"
- - "location": a location to find tickets within a four square mile box of
-  - Must be a Chicago, IL address, submitted in the form "<Street Number>
-	<Street Direction> <Street Name>"
-  - For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
-E. 60th Street"
- - 'closing_type': the type of street closure associated with the location
-  - Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and 
-"Intermitte"
+ - "worktype": the reason for a ticket. A full list of valid entries is
+ available in inputs/work_types.txt.
+ - "start_date": a lower limit (inclusive) on the date a ticket was issued. Must
+ be of the form "YYYY-MM-DD".
+ - "end_date": an upper limit (exclusive) on the date a ticket was issued. Must
+ be of the form "YYYY-MM-DD".
+ - "location": a location to find tickets within a four square mile box of. Must
+ be a Chicago, IL address, submitted in the form "<Street Number> <Street
+ 	Direction> <Street Name>". For example, 1307 E. 60th Street, Chicago, IL
+ 	60637 would be passed as "6031 E. 60th Street".
+ - 'closing_type': the type of street closure associated with the location.
+ Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and "Intermitte"
+- tickets
 
 For example, to query parking tickets in Hyde Park during June 2017, one would
 run the following command:
