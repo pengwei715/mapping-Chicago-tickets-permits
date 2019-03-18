@@ -57,7 +57,7 @@ street.
 The following Python packages are needed to run this software:
 
 | Package | Version |
-|  - - - - |  - -  -|
+|  ---- |  ---- |
 | descartes | 1.1.0 |
 | geocoder | 1.38.1 |
 | geopandas | 0.4.1 |
@@ -152,8 +152,8 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
  be of the form "YYYY-MM-DD".
  - "location": a location to find tickets within a four square miles box of. 
- Must be a Chicago, IL address, submitted in the form "<Street Number>
-<Street Direction> <Street Name>". For example, 1307 E. 60th Street,
+ Must be a Chicago, IL address, submitted in the form "(Street Number)
+(Street Direction) (Street Name)". For example, 1307 E. 60th Street,
 Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  - "neighborhood": the name of a Chicago neighborhood. A full list of valid
  entries is available in inputs/neighborhood_names.txt.
