@@ -159,10 +159,8 @@ Valid parameters for each data set are as follows:
  be of the form "YYYY-MM-DD".
  - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
  be of the form "YYYY-MM-DD".
- - "location": a location to find tickets within a four square miles box of. 
- Must be a Chicago, IL address, submitted in the form "<Street Number>
-<Street Direction> <Street Name>". For example, 1307 E. 60th Street,
-Chicago, IL 60637 would be passed as "6031 E. 60th Street".
+ - "location": a location to find tickets within a four square mile box of. For
+ example, "1307 E. 60th Street, Chicago, IL 60637"
  - "neighborhood": the name of a Chicago neighborhood. A full list of valid
  entries is available in inputs/neighborhood_names.txt.
 - permits
@@ -174,7 +172,6 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  be of the form "YYYY-MM-DD".
  - "location": a location to find tickets within a four square mile box of. For
  example, "1307 E. 60th Street, Chicago, IL 60637"
- 	60637 would be passed as "6031 E. 60th Street".
  - 'closing_type': the type of street closure associated with the location.
  Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and "Intermitte"
 - linked
