@@ -1,5 +1,7 @@
 # Tickets Project Group
 
+$503,113,540 in tickets. 140,516 Chicago Transportation Department permits.
+
 The primary purpose of this project is to examine the distribution of parking
 tickets and transportation permits across the City of Chicago. In this project,
 you will find tools to analyze these questions together and in isolation. We
