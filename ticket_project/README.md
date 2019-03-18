@@ -133,8 +133,7 @@ from a CSV.
 ### Running the main program
 The main program can be run from the command line using the following syntax:
 ```
-python3 <put file name here>  <dataset to use>  <dictionary-like JSON string
-specifying parameters to limit the dataset on>
+python3 analyze  <dataset to use>  <dictionary-like JSON string specifying parameters to limit the dataset on>
 ```
 
 Valid choices of dataset are:
@@ -163,9 +162,8 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  be of the form "YYYY-MM-DD".
  - "end_date": an upper limit (exclusive) on the date a ticket was issued. Must
  be of the form "YYYY-MM-DD".
- - "location": a location to find tickets within a four square mile box of. Must
- be a Chicago, IL address, submitted in the form "<Street Number> <Street
- 	Direction> <Street Name>". For example, 1307 E. 60th Street, Chicago, IL
+ - "location": a location to find tickets within a four square mile box of. For
+ example, "1307 E. 60th Street, Chicago, IL 60637"
  	60637 would be passed as "6031 E. 60th Street".
  - 'closing_type': the type of street closure associated with the location.
  Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and "Intermitte"
@@ -174,10 +172,8 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  be of the form "YYYY-MM-DD".
  - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
  be of the form "YYYY-MM-DD".
- - "location": a location to find tickets within a four square miles box of. 
- Must be a Chicago, IL address, submitted in the form "(Street Number)
-(Street Direction) (Street Name)". For example, 1307 E. 60th Street,
-Chicago, IL 60637 would be passed as "6031 E. 60th Street".
+ - "location": a location to find tickets within a four square mile box of. For
+ example, "1307 E. 60th Street, Chicago, IL 60637"
  - "neighborhood": the name of a Chicago neighborhood. A full list of valid
  entries is available in inputs/neighborhood_names.txt.
 - permits
@@ -187,19 +183,17 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
 For example, to query parking tickets in Hyde Park during June 2017, one would
 run the following command:
 ```
-python3 <put filename here> tickets '{"neighborhood": "Hyde Park", "start_date":
-"06-01-2017", "end_date": "07-01-2017"}'
+python3 analyze.py tickets '{"neighborhood": "Hyde Park", "start_date": "06-01-2017", "end_date": "07-01-2017"}'
 ```
 
-To query all permits issued near 1307 E. 60th Street, Chicago, IL 60637 for a
-block party, one would run the following command:
+To query all permits issued near 1307 E. 60th Street, Chicago, IL 60637 for
+athletic events, one would run the following command:
 ```
-python3 <put filename here> permits '{"location": "1307 E. 60th Street",
-"worktype": "BlockParty"}'
+python3 analyze.py permits '{"location": "1307 E. 60th Street, Chicago, IL 60637", "worktype": "Athletic"}'
 ```
 
 To query all the parking tickets associated with Transportation Department
 Permits in Woodlawn, one would run the following command:
 ```
-python3 <put filename here> linked '{"neighborhood": 'Woodlawn'}'
+python3 analyze.py linked '{"neighborhood": "Woodlawn"}'
 ```
