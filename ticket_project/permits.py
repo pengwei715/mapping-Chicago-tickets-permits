@@ -9,11 +9,12 @@ from datetime import datetime
 
 MAXSIZE = 1041814 #whole size of data
 
-def get_permits(num=MAXSIZE):
+def get_permits(start_date):
     '''
     Get whole sample permit data
     Input:
-        num: number of rows
+        start_date: (str) 'MM-DD-YYYY' date after which to capture
+        permits data; first date with data is '07-13-2015'
     Return:
         Pandas dataframe that contains all useful data of permits.
     '''
@@ -54,7 +55,7 @@ def get_permits(num=MAXSIZE):
     res = client.get("erhc-fkv9", 
                     select=','.join(coltypes.keys()), 
                     where=conds, 
-                    limit=num)
+                    limit=MAXSIZE)
 
     df = pd.DataFrame.from_records(res)\
                      .astype(coltypes)
@@ -75,6 +76,6 @@ def get_permits(num=MAXSIZE):
                                            df.applicationfinalizeddate, 
                                            df.applicationexpiredate)
     df = df.drop(['applicationenddate', 'applicationfinalizeddate'], axis=1)
-    cutoff = datetime.strptime('07-13-2015', '%m-%d-%Y')
+    cutoff = datetime.strptime(start_date, '%m-%d-%Y')
     return df[df.applicationexpiredate >= cutoff]
 

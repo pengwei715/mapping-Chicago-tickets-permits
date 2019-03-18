@@ -19,7 +19,6 @@ def link_with_neighborhoods(df, lng_col, lat_col):
     geodf = nbhds.convert_to_geodf(df, lng_col, lat_col)
     return nbhds.find_neighborhoods(geodf, nbhd)
 
-
 def filter_input(df, input_dict):
     '''
     filter_input takes a tickets_df and returns a filtered df based on the
@@ -31,9 +30,9 @@ def filter_input(df, input_dict):
     '''
     fail_str = '{} {} not found, ignoring'
     success_str = 'filtered on {} number of permits reduced from {} to {}'
-    column_dict = {'worktype': 'worktype',
-                   'start_date': 'applicationfinalizeddate',
-                   'end_date': 'applicationfinalizeddate',
+    column_dict = {'worktype': 'worktypedescription',
+                   'start_date': 'applicationexpiredate',
+                   'end_date': 'applicationexpiredate',
                    'location': ['longitude', 'latitude'],
                    'closing_type': 'streetclosure',
                    'streetname': 'streetname'}
