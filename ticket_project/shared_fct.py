@@ -181,10 +181,10 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
             leg._A = []
             colorbar = fig.colorbar(leg)
 
-        caption = str(geodf.shape[0]) + ' entries remain. '
+        caption = str(geodf.shape[0]) + ' entries remain '
         if db_type != 'permits':
-            caption = (caption + 'Which represents $' + 
-                       str(geodf['fine_amt'].agg('sum')) + ' in fines')
+            caption = (caption + 'which represents $' + 
+                       str(int(geodf['fine_amt'].agg('sum'))) + ' in fines')
         plt.figtext(0.5, 0.01, caption, wrap=True, horizontalalignment='center',
                     fontsize=12)
         plt.show()
@@ -283,7 +283,10 @@ def go_linked(parameters):
             
             print()
             print('Building the map...')
-            project_onto_chicago(linked, nbhd, True, 'linked', neighborhood="")
+            if 'location' in parameters or 'neighborhood' in parameters:
+                location_bool = True
+            project_onto_chicago(linked, nbhd, location_bool, 'linked', \
+                parameters.get('neighborhood', ""))
         else:
             print('Datasets cannot be linked because your search yields either', 
                    '0 tickets, 0 permits, or both.')
