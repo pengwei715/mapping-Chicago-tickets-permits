@@ -1,9 +1,7 @@
 '''
 Shrink the tickets data set
 '''
-
 import sys
-import csv
 import pandas as pd
 
 def go(input_path, output_path):
