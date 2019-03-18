@@ -2,8 +2,8 @@
 
 The primary purpose of this project is to examine the distribution of parking
 tickets and transportation permits across the City of Chicago. In this project,
-you will find tools to analyze theses questions together and in isolation. We
-provide a matching and mapping system in which users an specify attributes of a
+you will find tools to analyze these questions together and in isolation. We
+provide a matching and mapping system in which users a specify attributes of a
 ticket or permit, find similar tickets/permits, and map their occurrence. These
 resulting maps allow users to see where certain types of tickets/permits are
 more common across the city or where matching tickets/permits have occurred
@@ -22,7 +22,7 @@ this project)
 2. City of Chicago Data Portal's Transportation Department Permits Dataset (API):
 https://data.cityofchicago.org/Transportation/Transportation-Department-Permits/pubx-yq2d
 
-3. City of Chicago Data Portal's Neighborhood Bounaries (API):
+3. City of Chicago Data Portal's Neighborhood Boundaries (API):
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neighborhoods/9wp7-iasj
 
 4. City of Chicago Data Portal's Zip Code Boundaries (API): 
@@ -31,13 +31,13 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-C
 ### A note on data coverage
 Currently, parking tickets data covers from 7/13/2015 to 5/14/2018. The lower
 limit is imposed by the developers as permits data is only consistently
-available in the City of Chicago Data Portal Transportiation Department Permits
-dataset after this date (discussed more in above section). The upper limit is
+available in the City of Chicago Data Portal Transportation Department Permits
+dataset after this date (discussed more in the above section). The upper limit is
 imposed by the dataset downloaded from ProPublica.
 
 Transportation Departments data is up-to-date with the City of Chicago Data
 Portal. Technically, there is no lower or upper limit on the dates it covers,
-but for consistent coverage we suggest only querying for dates after
+but for consistent coverage, we suggest only querying for dates after
 7/13/2015.
 
 Understanding which tickets are linked with permits turns out to be quite
@@ -46,9 +46,9 @@ in location and time yields a number of tickets unrelated to parking, such as
 having expired or missing license plates. Since our project was specifically
 interested in how permits limit parking and result in tickets as a result of
 limiting parking, we ended up making applying a number of assumptions (made
-a priori and in consultation with the data) to hopefull get an accurate number
+a priori and in consultation with the data) to hopefully get an accurate number
 of tickets directly linked with permits limiting parking spaces. In particular,
-when linking the two datasets, we limited to tickets whose violations is either
+when linking the two datasets, we limited to tickets whose violation is either
 "PARKING/STANDING PROHIBITED ANYTIME" or "NO STANDING/PARKING TIME RESTRICTED",
 and we limited the permits data to permits allowing for a full closure of the
 street.
@@ -70,14 +70,14 @@ The following Python packages are needed to run this software:
 | sodapy | 1.5.2 |
 
 
-Additionally, rtree requires libspatialindex library, avaliable at 
+Additionally, rtree requires libspatialindex library, available at 
 https://libspatialindex.org/. Our software uses version 1.8.5.
 
 ## Running this software
 
 ### First things first
 To avoid storing unnecessarily large CSV files in GitLab, a reduced version of
-the parking tickets dataset should downloaded by navigating to the root of the
+the parking tickets dataset should be downloaded by navigating to the root of the
 project folder and running the following command:
 ```
 sh get_files.sh
@@ -101,27 +101,27 @@ mapping violation codes to violation descriptions.
 
 The reduction in size is achieved by eliminating a number of columns that we
 don't need for our analysis or that are duplicated and by filtering tickets
-occuring before 7/13/2015. This date is selected because this is the date on
+occurring before 7/13/2015. This date is selected because this is the date on
 which the City of Chicago began using its current system for tracking
 transportation department permits. While some permits from before this date are
 available in the transportation department permits dataset, the quality of this
 data is unclear.
 
 The creation of CSV mapping violation codes to violation descriptions reflects
-the fact that the current dataset stores the reason a tickets was issued in
+the fact that the current dataset stores the reason a ticket was issued in
 two columns, violation_code and violation_description. To cut down on the size
 of our CSV file containing the ticket dataset, we remove the
 violation_descrption column since it is stored as strings and keep the
 substantially smaller violation_description column. Since our the
 violation_description column is more understandable to humans, however, we
 create the CSV linking violation codes to violation descriptions so that we can
-reassociate tickets witih violation descriptions as a categorical column
+reassociate tickets with the violation descriptions as a categorical column
 after reading into pandas.
 
-The way the dataset is shrunk is also intentially designed to make it easier to
+The way the dataset is shrunk is also intentionally designed to make it easier to
 structure the dataset in ways that make it easier to manipulate in pandas later.
 For example, with over 6 million rows remaining after our date filter, storing
-the address where each ticket occured as a string would be quite expensive
+the address where each ticket occurred as a string would be quite expensive
 memory-wise and could make computations in pandas difficult or impossible
 depending on RAM size. So instead, we break address into three columns: street
 number, street direction, and street name. When later reading this dataset into
@@ -142,9 +142,9 @@ Valid choices of dataset are:
 - "permits": the dataset of permits
 - "linked": the dataset linking parking tickets to permits
 
-Valid paramters for each data set are as follows:
+Valid parameters for each data set are as follows:
 - tickets
- - "violation": the reason for which a tickets was issued;  full list of valid
+ - "violation": the reason for which a ticket was issued;  full list of valid
  entries is avaliable in inputs/violation_types.txt.
  - "start_date": a lower limit (inclusive) on the date a ticket was issued; must
  be of the form "YYYY-MM-DD".
