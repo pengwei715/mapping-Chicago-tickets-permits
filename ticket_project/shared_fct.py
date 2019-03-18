@@ -180,8 +180,10 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
         leg._A = []
         colorbar = fig.colorbar(leg)
 
-    #plt.figtext(0.5, 0.01, 'Stats about ticket similarity score', wrap=True,\
-    #            horizontalalignment='center', fontsize=12)
+    caption = str(geodf.shape[0]) + ' entries remain. '
+    if db_type != 'permits':
+        caption = caption + 'which represents $' + geodf['fine_amt'].agg('sum') + 'in fines.'
+    plt.figtext(0.5, 0.01, caption, wrap=True, horizontalalignment='center', fontsize=12)
     plt.show()
 
 
@@ -248,6 +250,7 @@ def go_linked(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
+    location_bool = False
 
     if set(parameters.keys())\
        - (set(PERMIT_COLUMNS.keys())\
@@ -268,10 +271,12 @@ def go_linked(parameters):
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         linked = link_with_neighborhoods(linked, 'geocoded_lng', 'geocoded_lat')
         print('Generating the analysis...')
-        project_onto_chicago(linked, nbhd, True, 'linked', neighborhood="")
+        if 'location' in parameters or 'neighborhood' in parameters:
+            location_bool = True
+        project_onto_chicago(linked, nbhd, location_bool, 'linked', parameters.get('neighborhood', ""))
 
 if __name__ == "__main__":
-    usage = "python3 shrink_tickets.py <dataset> <parameters>"
+    usage = "python3 shared_fct.py <dataset> <parameters>"
     assert (len(sys.argv) == 3), \
            ('Please specify what data set to use',
             '(tickets, permits, or links)',
