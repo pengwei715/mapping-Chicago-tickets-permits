@@ -107,7 +107,7 @@ def filter_input(df, input_dict, column_dict, db_type):
             else:
                 df = df[df[column_dict[key]] == val]
                 print(success_str.format(val, row_nums, df.shape[0]))
-        if key == 'neighborhood':
+        if key == 'neighborhood' and 'neighborhood' in column_dict:
             neigh_dict = nbhds.link_neighs_zips()
             if val in neigh_dict:
                 df = df[df[column_dict[key]].isin(neigh_dict[val])]
@@ -123,6 +123,8 @@ def filter_input(df, input_dict, column_dict, db_type):
             print(success_str.format(val, row_nums, df.shape[0]))
         if key == 'location':
             g = geocoder.osm(input_dict[key])
+            if 'addr:city' not in g.osm or not g.osm['addr:city'] == 'Chicago':
+                print('Geocoding failed to yield an address within Chicago.')
             if g.x and g.y:
                 mask = (df[column_dict[key][0]] < g.x + dist_diff) & \
                        (df[column_dict[key][0]] > g.x - dist_diff) & \
@@ -130,8 +132,8 @@ def filter_input(df, input_dict, column_dict, db_type):
                        (df[column_dict[key][1]] > g.y - dist_diff)
                 df = df[mask]
                 print(success_str.format(\
-                    'locations within approximately one mile of ' + val, \
-                    row_nums, df.shape[0]))
+                        'locations within approximately one mile of ' + val, \
+                        row_nums, df.shape[0]))
             else:
                 print(fail_str.format(key, val))
     return df
@@ -162,8 +164,7 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
                 geodf = geodf[geodf['pri_neigh'] == neighborhood]
                 print('Exact filtering on', neighborhood, geodf.shape[0], \
                         'tickets remain')
-            if db_type != 'linked':
-                nbhd = nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
+            nbhd = nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
             base = nbhd.plot(color='white', edgecolor='black')
             geodf.plot(ax=base)
             base.set_title('Regional ' + db_type + ' Map')
