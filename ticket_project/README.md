@@ -28,7 +28,7 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neigh
 4. City of Chicago Data Portal's Zip Code Boundaries (API): 
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-Codes/gdcf-axmw
 
-## A note on data coverage
+### A note on data coverage
 Currently, parking tickets data covers from 7/13/2015 to 5/14/2018. The lower
 limit is imposed by the developers as permits data is only consistently
 available in the City of Chicago Data Portal Transportiation Department Permits
@@ -59,6 +59,7 @@ The following Python packages are needed to run this software:
 
 Additionally, rtree requires libspatialindex library, avaliable at 
 https://libspatialindex.org/. Our software uses version 1.8.5.
+
 ## Running this software
 
 ### First things first
