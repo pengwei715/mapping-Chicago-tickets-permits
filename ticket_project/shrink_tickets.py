@@ -126,10 +126,12 @@ def output_data(df, output_path):
     print('Generating and outputting samples...')
     for i in range(1, 7):
         n = 10 ** i
-        output_loc = output_path + 'sample_tickets_' + str(n) + '.csv'
-        with open(output_loc, 'w') as f:
-            df.sample(n).to_csv(f)
-
+        if n <= len(df):
+            output_loc = output_path + 'sample_tickets_' + str(n) + '.csv'
+            with open(output_loc, 'w') as f:
+                df.sample(n).to_csv(f)
+        else:
+            break
 
 if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <path to dataset> <output path>"
