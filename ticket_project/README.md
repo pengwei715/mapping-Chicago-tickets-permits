@@ -2,7 +2,7 @@
 
 The primary purpose of this project is to examine the distribution of parking
 tickets and transportation permits across the City of Chicago. In this project,
-you will find tools to analyze theses questions together and in insolation. We
+you will find tools to analyze theses questions together and in isolation. We
 provide a matching and mapping system in which users an specify attributes of a
 ticket or permit, find similar tickets/permits, and map their occurrence. These
 resulting maps allow users to see where certain types of tickets/permits are

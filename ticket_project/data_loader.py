@@ -4,10 +4,10 @@ raw datasets into specific forms so that they can be
 analyzed
 '''
 import csv
+import gc
 from datetime import datetime
 import pandas as pd
 from sodapy import Socrata
-import gc
 import numpy as np
 
 
