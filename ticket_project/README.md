@@ -31,21 +31,19 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-C
 ## Requirements
 The following Python packages are needed to run this software:
 
-- csv, version=
-- gc, version=
-- pandas, version=
-- matplotlib, version=
-- geopandas, version=
-- re, version=
-- datetime, version=
-- numpy, version=
-- shapely, version=
-- Socrata, version=
-- rtree, version=
-- geocoder, version=
-- json, version=
-- sys, version=
-- mapclassify, version=
+Package         | Version
+---------------------------
+- descartes,      version = 1.1.0
+- geocoder,       version = 1.38.1
+- geopandas,      version = 0.4.1
+- mapclassify,    version = 2.0.1
+- matplotlib,     version = 3.0.2
+- numpy,          version = 1.16.2
+- pandas,         version = 0.23.4
+- rtree,          version = 0.8.3
+- shapely,        version = 1.6.4.post2
+- sodapy,         version = 1.5.2
+
 
 Additionally, rtree requires libspatialindex library, avaliable at https://libspatialindex.org/.
 Our software uses version 1.8.5.
