@@ -31,7 +31,7 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-C
 ## Requirements
 The following Python packages are needed to run this software:
 
-|Package | Version |
+| Package | Version |
 --------------------
 | descartes | 1.1.0 |
 | geocoder | 1.38.1 |
