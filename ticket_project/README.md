@@ -107,6 +107,29 @@ transportation department permits. While some permits from before this date are
 available in the transportation department permits dataset, the quality of this
 data is unclear.
 
+The creation of CSV mapping violation codes to violation descriptions reflects
+the fact that the current dataset stores the reason a tickets was issued in
+two columns, violation_code and violation_description. To cut down on the size
+of our CSV file containing the ticket dataset, we remove the
+violation_descrption column since it is stored as strings and keep the
+substantially smaller violation_description column. Since our the
+violation_description column is more understandable to humans, however, we
+create the CSV linking violation codes to violation descriptions so that we can
+reassociate tickets witih violation descriptions as a categorical column
+after reading into pandas.
+
+The way the dataset is shrunk is also intentially designed to make it easier to
+structure the dataset in ways that make it easier to manipulate in pandas later.
+For example, with over 6 million rows remaining after our date filter, storing
+the address where each ticket occured as a string would be quite expensive
+memory-wise and could make computations in pandas difficult or impossible
+depending on RAM size. So instead, we break address into three columns: street
+number, street direction, and street name. When later reading this dataset into
+Python, we can then store the street number as an unsigned integer, and the
+street direction and street names as categoricals, which results in a
+substantial decrease in deep memory usage when loading the dataset into pandas
+from a CSV.
+
 ### Running the main program
 The main program can be run from the command line using the following syntax:
 ```
