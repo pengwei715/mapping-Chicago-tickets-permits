@@ -56,6 +56,7 @@ def link_neighs_zips():
     neighborhoods = import_geometries(NEIGHS_ID)
     zipcodes = import_geometries(ZIPCODES_ID)
     link = geo_pd.sjoin(neighborhoods, zipcodes, how='inner', op='intersects')
+
     neighs_zips_dict = {}
     for neighborhood in list(neighborhoods['pri_neigh']):
         mask = link['pri_neigh'] == neighborhood
@@ -106,6 +107,9 @@ def find_neighborhoods(geo_df, neighborhoods):
     References:
     geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
+    if geo_df.empty:
+        return geo_pd.GeoDataFrame() #cannot perform sjoin on empty GeoDataFrame
+
     geo_df = geo_df.to_crs(neighborhoods.crs)
     merged = geo_pd.sjoin(geo_df, neighborhoods, how='left', op='within',
                           rsuffix='_neig')
