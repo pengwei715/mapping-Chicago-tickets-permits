@@ -1,5 +1,7 @@
 '''
-Common functions of the whole software
+Common functions of the whole software, can be used to analyze spatial
+distributions of tickets, transportantion department permits, or linked
+tickets and transportation department permits.
 '''
 
 import re
@@ -293,7 +295,7 @@ def go_linked(parameters):
 
 
 if __name__ == "__main__":
-    usage = "python3 shared_fct.py <dataset> <parameters>"
+    usage = "python3 analyze.py <dataset> <parameters>"
     assert (len(sys.argv) == 3), \
            ('Please specify what data set to use',
             '(tickets, permits, or links)',
