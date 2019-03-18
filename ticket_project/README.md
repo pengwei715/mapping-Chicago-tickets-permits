@@ -176,9 +176,6 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  example, "1307 E. 60th Street, Chicago, IL 60637"
  - "neighborhood": the name of a Chicago neighborhood. A full list of valid
  entries is available in inputs/neighborhood_names.txt.
-- permits
- - "worktype": the reason for a ticket. A full list of valid entries is
- available in inputs/work_types.txt.
 
 For example, to query parking tickets in Hyde Park during June 2017, one would
 run the following command:
