@@ -84,7 +84,7 @@ def convert_to_geodf(df, long_col, lat_col, proj=None):
     if not proj:
         proj = {'init': 'epsg:4326'}
 
-    df = df[(df[long_col].notna() & df[lat_col].notna())]
+    df = df[(df[long_col].notna() & df[lat_col].notna())].copy() #shallow copy
     df['coordinates'] = list(zip(df[long_col], df[lat_col]))
     df.loc[:, 'coordinates'] = df.coordinates.apply(shapely.geometry.Point)
     geodf = geo_pd.GeoDataFrame(df, geometry='coordinates')
