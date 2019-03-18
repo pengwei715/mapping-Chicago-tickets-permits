@@ -26,7 +26,7 @@ TICKET_COLUMNS = {'violation': 'violation_code',
                   'location': ['geocoded_lng', 'geocoded_lat'],
                   'neighborhood': 'zipcode'}
 #columns of permits data that users can filter
-PERMIT_COLUMNS = {'worktype': 'worktypedescription',
+PERMIT_COLUMNS = {'worktype': 'worktype',
                   'start_date': 'applicationexpiredate',
                   'end_date': 'applicationexpiredate',
                   'location': ['longitude', 'latitude'],
@@ -168,6 +168,7 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
             base = nbhd.plot(color='white', edgecolor='black')
             geodf.plot(ax=base)
             base.set_title('Regional ' + db_type + ' Map')
+
 
         else: #citywide
             fig, ax = plt.subplots(1)
