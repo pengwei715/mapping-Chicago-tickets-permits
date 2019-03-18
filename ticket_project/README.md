@@ -60,7 +60,7 @@ tickets.
 Finally, its worth noting how permits are plotted. The city provides latitude
 and longitude coordinates for each permit, and we choose to use this to plot the
 permits on a map. This system works pretty well for most permits, which cover a
-small geographic area, but does not represent more expasive permits as well.
+small geographic area, but does not represent more expansive permits as well.
 
 ## Requirements
 The following Python packages are needed to run this software:
@@ -122,7 +122,7 @@ the fact that the current dataset stores the reason a ticket was issued in
 two columns, violation_code and violation_description. To cut down on the size
 of our CSV file containing the ticket dataset, we remove the
 violation_descrption column since it is stored as strings and keep the
-substantially smaller violation_description column. Since our the
+substantially smaller violation_description column. Since the
 violation_description column is more understandable to humans, however, we
 create the CSV linking violation codes to violation descriptions so that we can
 reassociate tickets with the violation descriptions as a categorical column
