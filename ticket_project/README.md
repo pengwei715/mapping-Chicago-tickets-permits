@@ -53,7 +53,14 @@ of tickets directly linked with permits limiting parking spaces. In particular,
 when linking the two datasets, we limited to tickets whose violation is either
 "PARKING/STANDING PROHIBITED ANYTIME" or "NO STANDING/PARKING TIME RESTRICTED",
 and we limited the permits data to permits allowing for a full closure of the
-street.
+street. This is an extremely conservative matching system, and more study on the
+linkages of the two might provide a better rationale for how link permits and
+tickets.
+
+Finally, its worth noting how permits are plotted. The city provides latitude
+and longitude coordinates for each permit, and we choose to use this to plot the
+permits on a map. This system works pretty well for most permits, which cover a
+small geographic area, but does not represent more expasive permits as well.
 
 ## Requirements
 The following Python packages are needed to run this software:
