@@ -182,7 +182,7 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
 
     caption = str(geodf.shape[0]) + ' entries remain. '
     if db_type != 'permits':
-        caption = caption + 'which represents $' + geodf['fine_amt'].agg('sum') + 'in fines.'
+        caption = caption + 'which represents $' + str(geodf['fine_amt'].agg('sum')) + 'in fines.'
     plt.figtext(0.5, 0.01, caption, wrap=True, horizontalalignment='center', fontsize=12)
     plt.show()
 
