@@ -41,8 +41,14 @@ def link_permits_tickets(per, tik1):
         combo: pandas dataframe contains the large joint table
     '''
     per = per[per['streetclosure'] == 'Full']
+<<<<<<< HEAD
     tik = tik1[tik1['violation_code'].isin['NO STANDING/PARKING TIME RESTRICTED',
                                            'PARKING/STANDING PROHIBITED ANYTIME']]
+=======
+    tik = tik1[tik1['violation_code'].isin(['NO STANDING/PARKING TIME RESTRICTED',
+               'PARKING/STANDING PROHIBITED ANYTIME'])].copy()
+    
+>>>>>>> ca57278ebb1020804df85813a362055f3322671a
     tik['upper_streetname'] = tik.street_name.str.extract(r'(.+)\s.+\Z')
     tik['upper_streetname'] = tik.upper_streetname.str.upper()
     tik['upper_streetname'] = tik['upper_streetname'].astype('category')
