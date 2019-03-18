@@ -146,7 +146,20 @@ Chicago, IL 60637 would be passed as "6031 E. 60th Street".
  	60637 would be passed as "6031 E. 60th Street".
  - 'closing_type': the type of street closure associated with the location.
  Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and "Intermitte"
-- tickets
+- linked
+ - "start_date": a lower limit (inclusive) on the date a ticket was issued; must
+ be of the form "YYYY-MM-DD".
+ - "end_date": an upper limit (exclusive) on the date a ticket was issued; must
+ be of the form "YYYY-MM-DD".
+ - "location": a location to find tickets within a four square miles box of. 
+ Must be a Chicago, IL address, submitted in the form "<Street Number>
+<Street Direction> <Street Name>". For example, 1307 E. 60th Street,
+Chicago, IL 60637 would be passed as "6031 E. 60th Street".
+ - "neighborhood": the name of a Chicago neighborhood. A full list of valid
+ entries is available in inputs/neighborhood_names.txt.
+- permits
+ - "worktype": the reason for a ticket. A full list of valid entries is
+ available in inputs/work_types.txt.
 
 For example, to query parking tickets in Hyde Park during June 2017, one would
 run the following command:
