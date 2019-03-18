@@ -201,10 +201,10 @@ def go_tickets(parameters):
         print('Loading the tickets dataset...')
         tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH,
                                              data_loader.VIOLATIONS_FILEPATH)
-        #call filtering function
         tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')
+        
+        print()
         print('Generating analysis...')
-        #call map generating function
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         tickets = link_with_neighborhoods(tickets, 'geocoded_lng', 'geocoded_lat')
     if 'location' in parameters or 'neighborhood' in parameters:
@@ -229,16 +229,18 @@ def go_permits(parameters):
     else:
         print('Loading the permits dataset...')
         pers = data_loader.get_permits('07-13-2015')
-
         pers = filter_input(pers, parameters, PERMIT_COLUMNS, 'permits')
-        print('Generating the analysis...')
+        
+        print()
+        print('Building the map...')
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         pers = link_with_neighborhoods(pers, 'longitude', 'latitude')
+    
     if 'location' in parameters or 'neighborhood' in parameters:
         location_bool = True
 
-    project_onto_chicago(pers, nbhd, location_bool, 'permits', parameters.get('neighborhood', ""))
-        #call map generating function
+    project_onto_chicago(pers, nbhd, location_bool, 'permits', 
+                         parameters.get('neighborhood', ""))
 
 def go_linked(parameters):
     '''
@@ -249,9 +251,8 @@ def go_linked(parameters):
         strings with parameter values
     '''
 
-    if set(parameters.keys())\
-       - (set(PERMIT_COLUMNS.keys())\
-       | set(TICKET_COLUMNS.keys())):
+    if set(parameters.keys())- (set(PERMIT_COLUMNS.keys()) | 
+                                set(TICKET_COLUMNS.keys())):
         print('Error: Invalid parameter for linked dataset!')
     else:
         print('Loading the tickets dataset...')
@@ -259,16 +260,25 @@ def go_linked(parameters):
                                              data_loader.VIOLATIONS_FILEPATH)
         tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')
 
+        print()
         print('Loading the permits dataset...')
         pers = data_loader.get_permits('07-13-2015')
         pers = filter_input(pers, parameters, PERMIT_COLUMNS, 'permits')
 
-        print('Linking permits to tickets...')
-        linked = link_permits_tickets(pers, tickets)
-        nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
-        linked = link_with_neighborhoods(linked, 'geocoded_lng', 'geocoded_lat')
-        print('Generating the analysis...')
-        project_onto_chicago(linked, nbhd, True, 'linked', neighborhood="")
+        print()
+        if not (pers.empty or tickets.empty):
+            print('Linking permits to tickets...')
+            linked = link_permits_tickets(pers, tickets)
+            nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+            linked = link_with_neighborhoods(linked, 'geocoded_lng',
+                                             'geocoded_lat')
+            
+            print()
+            print('Building the map...')
+            project_onto_chicago(linked, nbhd, True, 'linked', neighborhood="")
+        else:
+            print('Datasets cannot be linked because your search yields either', 
+                   '0 tickets, 0 permits, or both.')
 
 if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <dataset> <parameters>"
