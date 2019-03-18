@@ -203,8 +203,6 @@ def go_tickets(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
-    location_bool = False
-
     if set(parameters.keys()) - set(TICKET_COLUMNS.keys()):
         print('Error: Invalid parameter for tickets dataset!')
     else:
@@ -217,8 +215,8 @@ def go_tickets(parameters):
         print('Generating analysis...')
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         tickets = link_with_neighborhoods(tickets, 'geocoded_lng', 'geocoded_lat')
-    if 'location' in parameters or 'neighborhood' in parameters:
-        location_bool = True
+    location_bool = ('location' in parameters) or ('neighborhood' in parameters)
+
 
     project_onto_chicago(tickets, nbhd, location_bool, 'tickets',
     	                 parameters.get('neighborhood', ""))
@@ -232,8 +230,6 @@ def go_permits(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
-    location_bool = False
-
     if set(parameters.keys()) - set(PERMIT_COLUMNS.keys()):
         print('Error: Invalid parameter for permits dataset!')
     else:
@@ -246,8 +242,8 @@ def go_permits(parameters):
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         pers = link_with_neighborhoods(pers, 'longitude', 'latitude')
     
-    if 'location' in parameters or 'neighborhood' in parameters:
-        location_bool = True
+    location_bool = ('location' in parameters) or ('neighborhood' in parameters)
+
 
     project_onto_chicago(pers, nbhd, location_bool, 'permits', 
                          parameters.get('neighborhood', ""))
@@ -260,8 +256,6 @@ def go_linked(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
-    location_bool = False
-
     if set(parameters.keys())- (set(PERMIT_COLUMNS.keys()) | 
                                 set(TICKET_COLUMNS.keys())):
         print('Error: Invalid parameter for linked dataset!')
@@ -286,8 +280,9 @@ def go_linked(parameters):
             
             print()
             print('Building the map...')
-            if 'location' in parameters or 'neighborhood' in parameters:
-                location_bool = True
+            location_bool = ('location' in parameters) or \
+                            ('neighborhood' in parameters)
+
             project_onto_chicago(linked, nbhd, location_bool, 'linked', \
                 parameters.get('neighborhood', ""))
         else:
