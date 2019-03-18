@@ -201,3 +201,7 @@ Permits in Woodlawn, one would run the following command:
 ```
 python3 analyze.py linked '{"neighborhood": "Woodlawn"}'
 ```
+
+Please note that in any plot, it may be difficult to distinguish between
+points mapped to the same location because they will be plotted on top of
+one another.
