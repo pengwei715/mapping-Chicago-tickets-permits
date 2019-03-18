@@ -44,7 +44,7 @@ but for consistent coverage we suggest only querying for dates after
 The following Python packages are needed to run this software:
 
 | Package | Version |
-| -------- | -------|
+|  - - - - |  - -  -|
 | descartes | 1.1.0 |
 | geocoder | 1.38.1 |
 | geopandas | 0.4.1 |
@@ -107,33 +107,33 @@ Valid choices of dataset are:
 
 Valid paramters for each data set are as follows:
 - tickets
--- "violation": the reason for which a tickets was issued
---- A full list of valid entries is avaliable in inputs/violation_types.txt
--- "start_date": a lower limit (inclusive) on the date a ticket was issued
---- Must be of the form "YYYY-MM-DD"
--- "end_date": an upper limit (exclusive) on the date a ticket was issued
---- Must be of the form "YYYY-MM-DD"
--- "location": a location to find tickets within a four square miles box of
---- Must be a Chicago, IL address, submitted in the form "<Street Number>
+ - "violation": the reason for which a tickets was issued
+  - A full list of valid entries is avaliable in inputs/violation_types.txt
+ - "start_date": a lower limit (inclusive) on the date a ticket was issued
+  - Must be of the form "YYYY-MM-DD"
+ - "end_date": an upper limit (exclusive) on the date a ticket was issued
+  - Must be of the form "YYYY-MM-DD"
+ - "location": a location to find tickets within a four square miles box of
+  - Must be a Chicago, IL address, submitted in the form "<Street Number>
 	<Street Direction> <Street Name>"
---- For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
+  - For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
 E. 60th Street"
--- "neighborhood": the name of a Chicago neighborhood
---- A full list of valid entries is available in inputs/neighborhood_names.txt
+ - "neighborhood": the name of a Chicago neighborhood
+  - A full list of valid entries is available in inputs/neighborhood_names.txt
 - permits
--- "worktype": the reason for a ticket
---- A full list of valid entries is available in inputs/work_types.txt
--- "start_date": a lower limit (inclusive) on the date a ticket was issued
---- Must be of the form "YYYY-MM-DD"
--- "end_date": an upper limit (exclusive) on the date a ticket was issued
---- Must be of the form "YYYY-MM-DD"
--- "location": a location to find tickets within a four square mile box of
---- Must be a Chicago, IL address, submitted in the form "<Street Number>
+ - "worktype": the reason for a ticket
+  - A full list of valid entries is available in inputs/work_types.txt
+ - "start_date": a lower limit (inclusive) on the date a ticket was issued
+  - Must be of the form "YYYY-MM-DD"
+ - "end_date": an upper limit (exclusive) on the date a ticket was issued
+  - Must be of the form "YYYY-MM-DD"
+ - "location": a location to find tickets within a four square mile box of
+  - Must be a Chicago, IL address, submitted in the form "<Street Number>
 	<Street Direction> <Street Name>"
---- For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
+  - For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
 E. 60th Street"
--- 'closing_type': the type of street closure associated with the location
---- Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and 
+ - 'closing_type': the type of street closure associated with the location
+  - Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and 
 "Intermitte"
 
 For example, to query parking tickets in Hyde Park during June 2017, one would
