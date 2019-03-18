@@ -28,6 +28,18 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Neigh
 4. City of Chicago Data Portal's Zip Code Boundaries (API): 
 https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-Codes/gdcf-axmw
 
+## A note on data coverage
+Currently, parking tickets data covers from 7/13/2015 to 5/14/2018. The lower
+limit is imposed by the developers as permits data is only consistently
+available in the City of Chicago Data Portal Transportiation Department Permits
+dataset after this date (discussed more in above section). The upper limit is
+imposed by the dataset downloaded from ProPublica.
+
+Transportation Departments data is up-to-date with the City of Chicago Data
+Portal. Technically, there is no lower or upper limit on the dates it covers,
+but for consistent coverage we suggest only querying for dates after
+7/13/2015.
+
 ## Requirements
 The following Python packages are needed to run this software:
 
@@ -45,8 +57,8 @@ The following Python packages are needed to run this software:
 | sodapy | 1.5.2 |
 
 
-Additionally, rtree requires libspatialindex library, avaliable at https://libspatialindex.org/.
-Our software uses version 1.8.5.
+Additionally, rtree requires libspatialindex library, avaliable at 
+https://libspatialindex.org/. Our software uses version 1.8.5.
 ## Running this software
 
 ### First things first
@@ -82,3 +94,64 @@ available in the transportation department permits dataset, the quality of this
 data is unclear.
 
 ### Running the main program
+The main program can be run from the command line using the following syntax:
+```
+python3 <put file name here>  <dataset to use>  <dictionary-like JSON string
+specifying parameters to limit the dataset on>
+```
+
+Valid choices of dataset are:
+- "tickets": the dataset of parking tickets
+- "permits": the dataset of permits
+- "linked": the dataset linking parking tickets to permits
+
+Valid paramters for each data set are as follows:
+- tickets
+-- "violation": the reason for which a tickets was issued
+--- A full list of valid entries is avaliable in inputs/violation_types.txt
+-- "start_date": a lower limit (inclusive) on the date a ticket was issued
+--- Must be of the form "YYYY-MM-DD"
+-- "end_date": an upper limit (exclusive) on the date a ticket was issued
+--- Must be of the form "YYYY-MM-DD"
+-- "location": a location to find tickets within a four square miles box of
+--- Must be a Chicago, IL address, submitted in the form "<Street Number>
+	<Street Direction> <Street Name>"
+--- For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
+E. 60th Street"
+-- "neighborhood": the name of a Chicago neighborhood
+--- A full list of valid entries is available in inputs/neighborhood_names.txt
+- permits
+-- "worktype": the reason for a ticket
+--- A full list of valid entries is available in inputs/work_types.txt
+-- "start_date": a lower limit (inclusive) on the date a ticket was issued
+--- Must be of the form "YYYY-MM-DD"
+-- "end_date": an upper limit (exclusive) on the date a ticket was issued
+--- Must be of the form "YYYY-MM-DD"
+-- "location": a location to find tickets within a four square mile box of
+--- Must be a Chicago, IL address, submitted in the form "<Street Number>
+	<Street Direction> <Street Name>"
+--- For example, 1307 E. 60th Street, Chicago, IL 60637 would be passed as "6031
+E. 60th Street"
+-- 'closing_type': the type of street closure associated with the location
+--- Valid entries are: "Curblane", "Sidewalk", "Full", "Partial", and 
+"Intermitte"
+
+For example, to query parking tickets in Hyde Park during June 2017, one would
+run the following command:
+```
+python3 <put filename here> tickets '{"neighborhood": "Hyde Park", "start_date":
+"06-01-2017", "end_date": "07-01-2017"}'
+```
+
+To query all permits issued near 1307 E. 60th Street, Chicago, IL 60637 for a
+block party, one would run the following command:
+```
+python3 <put filename here> permits '{"location": "1307 E. 60th Street",
+"worktype": "BlockParty"}'
+```
+
+To query all the parking tickets associated with Transportation Department
+Permits in Woodlawn, one would run the following command:
+```
+python3 <put filename here> linked '{"neighborhood": 'Woodlawn'}'
+```
