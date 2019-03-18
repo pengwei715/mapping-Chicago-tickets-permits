@@ -4,6 +4,7 @@ import pandas as pd
 from sodapy import Socrata
 import numpy as np
 from datetime import datetime
+import csv
 
 MAXSIZE = 1041814 #whole size of data
 TICKETS_FILEPATH = 'data/reduced_tickets.csv'
@@ -47,6 +48,18 @@ def import_tickets(ticket_file, dictionary_file):
 
     return df
 
+def generate_code_dict(filename):
+    '''
+    Reads in a csv of violation codes and violation names and
+    produces a dictionary which maps codes to names
+    '''
+    d = {}
+    with open(filename, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        for key, value in reader:
+            d[key] = value
+    return d
 
 def get_permits(start_date):
     '''

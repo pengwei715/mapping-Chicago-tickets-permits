@@ -10,7 +10,6 @@ from datetime import datetime
 import numpy as np
 import neighborhoods as nbhds
 import data_loader
-import permits
 import geocoder
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -20,9 +19,18 @@ import sys
 import csv
 
 
+TICKET_COLUMNS = {'violation': 'violation_code',
+                   'start_date': 'issue_date',
+                   'end_date': 'issue_date',
+                   'location': ['geocoded_lng', 'geocoded_lat'],
+                   'neighborhood': 'zipcode'}
+PERMIT_COLUMNS = {'worktype': 'worktypedescription',
+                    'start_date': 'applicationexpiredate',
+                    'end_date': 'applicationexpiredate',
+                    'location': ['longitude', 'latitude'],
+                    'closing_type': 'streetclosure'}
 
-
-def link_permits_tickets(per, tik):
+def link_permits_tickets(per, tik1):
     '''
     Join two dataframe together based on the location and issue time
     
@@ -33,7 +41,8 @@ def link_permits_tickets(per, tik):
         combo: pandas dataframe contains the large joint table
     '''
     per = per[per['streetclosure'] == 'Full']
-    tik = tik[tik['violation_code'] == 'NO STANDING/PARKING TIME RESTRICTED']
+    tik = tik1[tik1['violation_code'] == 'NO STANDING/PARKING TIME RESTRICTED']
+    
     tik['upper_streetname'] = tik.street_name.str.extract(r'(.+)\s.+\Z')
     tik['upper_streetname'] = tik.upper_streetname.str.upper()
     tik['upper_streetname'] = tik['upper_streetname'].astype('category')
@@ -71,18 +80,7 @@ def link_with_neighborhoods(df, lng_col, lat_col):
     return nbhds.find_neighborhoods(geodf, nbhd)
 
 
-def generate_code_dict(filename):
-    '''
-    Reads in a csv of violation codes and violation names and
-    produces a dictionary which maps codes to names
-    '''
-    d = {}
-    with open(filename, mode='r') as file:
-        reader = csv.reader(file)
-        next(reader)
-        for key, value in reader:
-            d[key] = value
-    return d
+
 
 def filter_input(df, input_dict, column_dict, db_type):
     '''
@@ -155,14 +153,15 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
     geopandas dissolve docs: http://geopandas.org/aggregation_with_dissolve.html
     geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
+    first_col = geodf.columns[0]
     if location_bool:
         if neighborhood:
             geodf = geodf[geodf['pri_neigh'] == neighborhood]
             print('Exact filtering on', neighborhood, geodf.shape[0], \
                     'tickets remain')
-        filtered_nbhd = \
-            nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
-        base = filtered_nbhd.plot(color='white', edgecolor='black')
+        if db_type != 'linked':
+            nbhd = nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
+        base = nbhd.plot(color='white', edgecolor='black')
         geodf.plot(ax=base)
         base.set_title('Regional ' + db_type + ' Map')
 
@@ -170,12 +169,12 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
         fig, ax = plt.subplots(1)
         heat = geodf.dissolve(by='pri_neigh', aggfunc='count')
         heat = nbhd.merge(heat, on='pri_neigh',how='left').fillna(0)
-        heat.plot(ax=ax, cmap='coolwarm', column='issue_date', linewidth=0.8,
+        heat.plot(ax=ax, cmap='coolwarm', column=first_col, linewidth=0.8,
                   linestyle='-')
         ax.axis('off')
         ax.set_title('Chicago ' + db_type + ' Heat Map')
-        n_min = min(heat.issue_date)
-        n_max = max(heat.issue_date)
+        n_min = min(heat[first_col])
+        n_max = max(heat[first_col])
         leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
                                     vmin=n_min, vmax=n_max))
         leg._A = []
@@ -195,19 +194,15 @@ def go_tickets(parameters):
         strings with parameter values
     '''
     location_bool = False
-    column_dict = {'violation': 'violation_code',
-                   'start_date': 'issue_date',
-                   'end_date': 'issue_date',
-                   'location': ['geocoded_lng', 'geocoded_lat'],
-                   'neighborhood': 'zipcode'}
-    if set(parameters.keys()) - set(column_dict.keys()):
+
+    if set(parameters.keys()) - set(TICKET_COLUMNS.keys()):
         print('Error: Invalid parameter for tickets dataset!')
     else:
         print('Loading the tickets dataset...')
         tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH, 
                                                  data_loader.VIOLATIONS_FILEPATH)
         #call filtering function
-        tickets = filter_input(tickets, parameters, column_dict, 'tickets')
+        tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')
         print('Generating analysis...')
         #call map generating function
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
@@ -227,18 +222,14 @@ def go_permits(parameters):
         strings with parameter values
     '''
     location_bool = False
-    column_dict = {'worktype': 'worktypedescription',
-                    'start_date': 'applicationexpiredate',
-                    'end_date': 'applicationexpiredate',
-                    'location': ['longitude', 'latitude'],
-                    'closing_type': 'streetclosure'}
-    if set(parameters.keys()) - set(column_dict.keys()):
+
+    if set(parameters.keys()) - set(PERMIT_COLUMNS.keys()):
         print('Error: Invalid parameter for permits dataset!')
     else:
         print('Loading the permits dataset...')
         pers = data_loader.get_permits('07-13-2015')
 
-        pers = filter_input(pers, parameters, column_dict, 'permits')
+        pers = filter_input(pers, parameters, PERMIT_COLUMNS, 'permits')
         print('Generating the analysis...')
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         pers = link_with_neighborhoods(pers, 'longitude', 'latitude')
@@ -256,34 +247,25 @@ def go_linked(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
-    column_dict = {'worktype': 'worktype',
-                   'start_date': 'applicationfinalizeddate',
-                   'end_date': 'applicationfinalizeddate',
-                   'location': ['longitude', 'latitude'],
-                   'neighborhood': 'zipcode',
-                   'streetname': 'streetname'}
-    if set(parameters.keys()) - set(column_dict.keys()):
+
+    if set(parameters.keys()) - (set(PERMIT_COLUMNS.keys()) | set(TICKET_COLUMNS.keys())):
         print('Error: Invalid parameter for linked dataset!')
     else:
         print('Loading the tickets dataset...')
         tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH,
                                              data_loader.VIOLATIONS_FILEPATH)
-        valid_tickets_params = set(['start_date', 'end_date', 'location',
-                                    'neighborhood'])
-        permits_params = {key: parameters[key] for key in valid_tickets_params
-                          if key in column_dict}
-        #need to filter tickets with appropriate parameters
+        tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')     
+
         print('Loading the permits dataset...')
-        pers = permits.get_permits()
-        valid_permits_params = set(['worktype', 'start_date', 'end_date',
-                                    'location', 'streetname'])
-        permits_params = {key: parameters[key] for key in valid_permits_params
-                          if key in column_dict}
-        #call permits filter function
+        pers = data_loader.get_permits('07-13-2015')
+        pers = filter_input(pers, parameters, PERMIT_COLUMNS, 'permits')
+
         print('Linking permits to tickets...')
         linked = link_permits_tickets(pers, tickets)
+        nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+        linked = link_with_neighborhoods(linked, 'geocoded_lng', 'geocoded_lat')
         print('Generating the analysis...')
-        #call map generating fucntion
+        project_onto_chicago(linked, nbhd, True, 'linked', neighborhood="")
 
 if __name__ == "__main__":
     usage = "python3 shrink_tickets.py <dataset> <parameters>"
