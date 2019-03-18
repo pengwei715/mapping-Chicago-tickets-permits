@@ -213,7 +213,7 @@ def go_tickets(parameters):
         tickets = filter_input(tickets, parameters, TICKET_COLUMNS, 'tickets')
         
         print()
-        print('Generating analysis...')
+        print('Building the map...')
         nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
         tickets = link_with_neighborhoods(tickets, 'geocoded_lng', 'geocoded_lat')
     location_bool = ('location' in parameters) or ('neighborhood' in parameters)
