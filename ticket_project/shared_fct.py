@@ -153,36 +153,43 @@ def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
     geopandas dissolve docs: http://geopandas.org/aggregation_with_dissolve.html
     geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
     '''
-    first_col = geodf.columns[0]
-    if location_bool:
-        if neighborhood:
-            geodf = geodf[geodf['pri_neigh'] == neighborhood]
-            print('Exact filtering on', neighborhood, geodf.shape[0], \
-                    'tickets remain')
-        if db_type != 'linked':
-            nbhd = nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
-        base = nbhd.plot(color='white', edgecolor='black')
-        geodf.plot(ax=base)
-        base.set_title('Regional ' + db_type + ' Map')
+    if not geodf.empty:
+        first_col = geodf.columns[0]
+        if location_bool:
+            if neighborhood:
+                geodf = geodf[geodf['pri_neigh'] == neighborhood]
+                print('Exact filtering on', neighborhood, geodf.shape[0], \
+                        'tickets remain')
+            if db_type != 'linked':
+                nbhd = nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
+            base = nbhd.plot(color='white', edgecolor='black')
+            geodf.plot(ax=base)
+            base.set_title('Regional ' + db_type + ' Map')
 
-    else: #citywide
-        fig, ax = plt.subplots(1)
-        heat = geodf.dissolve(by='pri_neigh', aggfunc='count')
-        heat = nbhd.merge(heat, on='pri_neigh', how='left').fillna(0)
-        heat.plot(ax=ax, cmap='coolwarm', column=first_col, linewidth=0.8,
-                  linestyle='-')
-        ax.axis('off')
-        ax.set_title('Chicago ' + db_type + ' Heat Map')
-        n_min = min(heat[first_col])
-        n_max = max(heat[first_col])
-        leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
-            vmin=n_min, vmax=n_max))
-        leg._A = []
-        colorbar = fig.colorbar(leg)
+        else: #citywide
+            fig, ax = plt.subplots(1)
+            heat = geodf.dissolve(by='pri_neigh', aggfunc='count')
+            heat = nbhd.merge(heat, on='pri_neigh', how='left').fillna(0)
+            heat.plot(ax=ax, cmap='coolwarm', column=first_col, linewidth=0.8,
+                      linestyle='-')
+            ax.axis('off')
+            ax.set_title('Chicago ' + db_type + ' Heat Map')
+            n_min = min(heat[first_col])
+            n_max = max(heat[first_col])
+            leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
+                vmin=n_min, vmax=n_max))
+            leg._A = []
+            colorbar = fig.colorbar(leg)
 
-    #plt.figtext(0.5, 0.01, 'Stats about ticket similarity score', wrap=True,\
-    #            horizontalalignment='center', fontsize=12)
-    plt.show()
+        caption = str(geodf.shape[0]) + ' entries remain. '
+        if db_type != 'permits':
+            caption = (caption + 'Which represents $' + 
+                       str(geodf['fine_amt'].agg('sum')) + ' in fines')
+        plt.figtext(0.5, 0.01, caption, wrap=True, horizontalalignment='center',
+                    fontsize=12)
+        plt.show()
+    else:
+        print('Dataset cannot be mapped because your search yields no matches.')
 
 
 def go_tickets(parameters):
@@ -250,6 +257,7 @@ def go_linked(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
+    location_bool = False
 
     if set(parameters.keys())- (set(PERMIT_COLUMNS.keys()) | 
                                 set(TICKET_COLUMNS.keys())):
@@ -280,8 +288,9 @@ def go_linked(parameters):
             print('Datasets cannot be linked because your search yields either', 
                    '0 tickets, 0 permits, or both.')
 
+
 if __name__ == "__main__":
-    usage = "python3 shrink_tickets.py <dataset> <parameters>"
+    usage = "python3 shared_fct.py <dataset> <parameters>"
     assert (len(sys.argv) == 3), \
            ('Please specify what data set to use',
             '(tickets, permits, or links)',

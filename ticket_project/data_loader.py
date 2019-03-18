@@ -38,7 +38,7 @@ def import_tickets(ticket_file, dictionary_file):
                  'zipcode': 'category',
                  'geocoded_lng': float,
                  'geocoded_lat': float,
-                 'fine_amt': 'category'}
+                 'fine_amt': float}
     df = pd.read_csv(ticket_file, dtype=col_types, index_col='ticket_number',
                      usecols=col_types.keys())
 
@@ -46,6 +46,7 @@ def import_tickets(ticket_file, dictionary_file):
     df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
     df['geocoded_lat'] = pd.to_numeric(df.geocoded_lat, downcast='float')
     df['issue_date'] = pd.to_datetime(df['issue_date'])
+    df['fine_amt'] = pd.to_numeric(df.fine_amt, downcast='float')
     violations = generate_code_dict(dictionary_file)
     df['violation_code'] = \
                     df['violation_code'].map(violations).astype('category')
