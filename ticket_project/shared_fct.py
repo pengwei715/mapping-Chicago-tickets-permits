@@ -9,8 +9,18 @@ import re
 from datetime import datetime
 import numpy as np
 import neighborhoods as nbhds
-import process_tickets
+import data_loader
 import permits
+import geocoder
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import geopandas
+import json
+import sys
+import csv
+
+
+
 
 def link_permits_tickets(per, tik):
     '''
@@ -85,17 +95,12 @@ def filter_input(df, input_dict, column_dict, db_type):
     '''
     fail_str = '{} {} not found, ignoring'
     success_str = 'filtered on {} number of ' + db_type + ' reduced from {} to {}'
-#    column_dict = {'violation': 'violation_code',
-#                   'start_date': 'issue_date',
-#                   'end_date': 'issue_date',
-#                   'location': ['geocoded_lng', 'geocoded_lat'],
-#                   'neighborhood': 'zipcode'}
     dist_diff = 0.0145 #approximately 1 mile in distance
 
     for key, val in input_dict.items():
         row_nums = df.shape[0]
 
-        if key == {'worktype', 'closing_type', 'streetname', 'violation'}:
+        if key in ('worktype', 'closing_type', 'streetname', 'violation'):
             unique_vals = df[column_dict[key]].unique()
             if val not in unique_vals:
                 print(fail_str.format(key, val))
@@ -125,11 +130,60 @@ def filter_input(df, input_dict, column_dict, db_type):
                        (df[column_dict[key][1]] > g.y - dist_diff)
                 df = df[mask]
                 print(success_str.format(\
-                    'locations within approxmiately one mile of ' + val, \
+                    'locations within approximately one mile of ' + val, \
                     row_nums, df.shape[0]))
             else:
                 print(fail_str.format(key, val))
     return df
+
+def project_onto_chicago(geodf, nbhd, location_bool, db_type, neighborhood=""):
+    '''
+    project_onto_chicago takes a set of parameters in the following form
+    and returns any tickets which match
+
+    inputs: geodf (geodf): geopandas df
+            nbhd (geodf): geopandas df
+            location_bool (bool): True if location filters are present
+            db_type (str): database name
+            neighborhoods (str): the name of the neighborhood filter, if any
+
+    References:
+    Generating colormaps: https://towardsdatascience.com/lets-make-a-map-using-
+        geopandas-pandas-andg-matplotlib-to-make-a-chloropleth-map-dddc31c1983d
+    matplotlib docs: https://matplotlib.org/tutorials/colors/colormaps.html
+    geopandas mapping docs: http://geopandas.org/mapping.html
+    geopandas dissolve docs: http://geopandas.org/aggregation_with_dissolve.html
+    geopandas merging docs: http://geopandas.org/mergingdata.html#spatial-joins
+    '''
+    if location_bool:
+        if neighborhood:
+            geodf = geodf[geodf['pri_neigh'] == neighborhood]
+            print('Exact filtering on', neighborhood, geodf.shape[0], \
+                    'tickets remain')
+        filtered_nbhd = \
+            nbhd[nbhd['pri_neigh'].isin(geodf.pri_neigh.unique())]
+        base = filtered_nbhd.plot(color='white', edgecolor='black')
+        geodf.plot(ax=base)
+        base.set_title('Regional ' + db_type + ' Map')
+
+    else: #citywide
+        fig, ax = plt.subplots(1)
+        heat = geodf.dissolve(by='pri_neigh', aggfunc='count')
+        heat = nbhd.merge(heat, on='pri_neigh',how='left').fillna(0)
+        heat.plot(ax=ax, cmap='coolwarm', column='issue_date', linewidth=0.8,
+                  linestyle='-')
+        ax.axis('off')
+        ax.set_title('Chicago ' + db_type + ' Heat Map')
+        n_min = min(heat.issue_date)
+        n_max = max(heat.issue_date)
+        leg = mpl.cm.ScalarMappable(cmap='coolwarm', norm=mpl.colors.Normalize(
+                                    vmin=n_min, vmax=n_max))
+        leg._A = []
+        colorbar = fig.colorbar(leg)
+
+    #plt.figtext(0.5, 0.01, 'Stats about ticket similarity score', wrap=True,\
+    #            horizontalalignment='center', fontsize=12)
+    plt.show()
 
 
 def go_tickets(parameters):
@@ -140,6 +194,7 @@ def go_tickets(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
+    location_bool = False
     column_dict = {'violation': 'violation_code',
                    'start_date': 'issue_date',
                    'end_date': 'issue_date',
@@ -148,13 +203,20 @@ def go_tickets(parameters):
     if set(parameters.keys()) - set(column_dict.keys()):
         print('Error: Invalid parameter for tickets dataset!')
     else:
-        print('Do the work for permits.')
         print('Loading the tickets dataset...')
-        tickets = process_tickets.import_tickets(process_tickets.TICKETS_FILEPATH, 
-                                                 process_tickets.VIOLATIONS_FILEPATH)
+        tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH, 
+                                                 data_loader.VIOLATIONS_FILEPATH)
         #call filtering function
+        tickets = filter_input(tickets, parameters, column_dict, 'tickets')
         print('Generating analysis...')
         #call map generating function
+        nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+        tickets = link_with_neighborhoods(tickets, 'geocoded_lng', 'geocoded_lat')
+    if 'location' in parameters or 'neighborhood' in parameters:
+        location_bool = True
+
+    project_onto_chicago(tickets, nbhd, location_bool, 'tickets', parameters.get('neighborhood', ""))
+
 
 def go_permits(parameters):
     '''
@@ -164,19 +226,26 @@ def go_permits(parameters):
     parameters (dictonary): dictionary mapping strings of parameter names to
         strings with parameter values
     '''
-    column_dict = {'worktype': 'worktype',
-                   'start_date': 'applicationfinalizeddate',
-                   'end_date': 'applicationfinalizeddate',
-                   'location': ['longitude', 'latitude'],
-                   'closing_type': 'streetclosure',
-                   'streetname': 'streetname'}
+    location_bool = False
+    column_dict = {'worktype': 'worktypedescription',
+                    'start_date': 'applicationexpiredate',
+                    'end_date': 'applicationexpiredate',
+                    'location': ['longitude', 'latitude'],
+                    'closing_type': 'streetclosure'}
     if set(parameters.keys()) - set(column_dict.keys()):
         print('Error: Invalid parameter for permits dataset!')
     else:
         print('Loading the permits dataset...')
-        pers = permits.get_permits()
-        #call permits filtering function
+        pers = data_loader.get_permits('07-13-2015')
+
+        pers = filter_input(pers, parameters, column_dict, 'permits')
         print('Generating the analysis...')
+        nbhd = nbhds.import_geometries(nbhds.NEIGHS_ID)
+        pers = link_with_neighborhoods(pers, 'longitude', 'latitude')
+    if 'location' in parameters or 'neighborhood' in parameters:
+        location_bool = True
+
+    project_onto_chicago(pers, nbhd, location_bool, 'permits', parameters.get('neighborhood', ""))
         #call map generating function
 
 def go_linked(parameters):
@@ -191,14 +260,14 @@ def go_linked(parameters):
                    'start_date': 'applicationfinalizeddate',
                    'end_date': 'applicationfinalizeddate',
                    'location': ['longitude', 'latitude'],
-                   'neighborhood': 'zipcode'
+                   'neighborhood': 'zipcode',
                    'streetname': 'streetname'}
     if set(parameters.keys()) - set(column_dict.keys()):
         print('Error: Invalid parameter for linked dataset!')
     else:
         print('Loading the tickets dataset...')
-        tickets = process_tickets.import_tickets(TICKETS_FILEPATH,
-                                                 VIOLATIONS_FILEPATH)
+        tickets = data_loader.import_tickets(data_loader.TICKETS_FILEPATH,
+                                             data_loader.VIOLATIONS_FILEPATH)
         valid_tickets_params = set(['start_date', 'end_date', 'location',
                                     'neighborhood'])
         permits_params = {key: parameters[key] for key in valid_tickets_params

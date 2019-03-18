@@ -1,14 +1,52 @@
-'''
-Get the permit data from chicago data portal
-Clean the data
-'''
+
+import gc
 import pandas as pd
 from sodapy import Socrata
 import numpy as np
 from datetime import datetime
-import shared_fct as shared
 
 MAXSIZE = 1041814 #whole size of data
+TICKETS_FILEPATH = 'data/reduced_tickets.csv'
+VIOLATIONS_FILEPATH = 'data/violations_dict.csv'
+
+def import_tickets(ticket_file, dictionary_file):
+    '''
+    Reads in a dataset of parking tickets, making some modifications to the
+    format data is presented in to decrease the size of the dataframe in memory.
+
+    Inputs:
+    filename (str): the path to a tickets dataset
+
+    Returns: Pandas dataframe
+
+    References:
+    Reducing dataframe memory usage: https://www.dataquest.io/blog/
+        pandas-big-data
+    '''
+    col_types = {'ticket_number': str,
+                 'issue_date': str,
+                 'violation_code': 'category',
+                 'street_num': int,
+                 'street_dir': 'category',
+                 'street_name': 'category',
+                 'zipcode': 'category',
+                 'geocoded_lng': float,
+                 'geocoded_lat': float,
+                 'fine_amt': 'category'}
+    df = pd.read_csv(ticket_file, dtype=col_types, index_col='ticket_number',
+                     usecols=col_types.keys())
+
+    df['street_num'] = pd.to_numeric(df.street_num, downcast='unsigned')
+    df['geocoded_lng'] = pd.to_numeric(df.geocoded_lng, downcast='float')
+    df['geocoded_lat'] = pd.to_numeric(df.geocoded_lat, downcast='float')
+    df['issue_date'] = pd.to_datetime(df['issue_date'])
+    violations = generate_code_dict(dictionary_file)
+    df['violation_code'] = \
+                    df['violation_code'].map(violations).astype('category')
+    gc.collect()
+
+    return df
+
 
 def get_permits(start_date):
     '''
@@ -79,13 +117,3 @@ def get_permits(start_date):
     df = df.drop(['applicationenddate', 'applicationfinalizeddate'], axis=1)
     cutoff = datetime.strptime(start_date, '%m-%d-%Y')
     return df[df.applicationexpiredate >= cutoff]
-
-def filter_permits(df, input_dict):
-    column_dict = {'worktype': 'worktypedescription',
-               'start_date': 'applicationexpiredate',
-               'end_date': 'applicationexpiredate',
-               'location': ['longitude', 'latitude'],
-               'closing_type': 'streetclosure',
-               'streetname': 'streetname'}
-
-    return shared.filter_input(df, input_dict, column_dict, 'permits')
