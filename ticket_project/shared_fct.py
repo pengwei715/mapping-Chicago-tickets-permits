@@ -8,13 +8,9 @@ import pandas as pd
 import re
 from datetime import datetime
 import numpy as np
-<<<<<<< HEAD
 import neighborhoods as nbhds
-
-=======
 import process_tickets
 import permits
->>>>>>> 06b3dc058ae07890cd9f712bf55fabaf4b118642
 
 def link_permits_tickets(per, tik):
     '''
@@ -51,7 +47,6 @@ def link_permits_tickets(per, tik):
 
     return combo
 
-<<<<<<< HEAD
 
 
 def link_with_neighborhoods(df, lng_col, lat_col):
@@ -135,7 +130,8 @@ def filter_input(df, input_dict, column_dict, db_type):
             else:
                 print(fail_str.format(key, val))
     return df
-=======
+
+
 def go_tickets(parameters):
     '''
     Runs the program for the tickets dataset given the specified parameters
@@ -234,4 +230,3 @@ if __name__ == "__main__":
         go_permits(parameters)
     elif dataset == 'linked':
         go_linked(parameters)
->>>>>>> 06b3dc058ae07890cd9f712bf55fabaf4b118642
