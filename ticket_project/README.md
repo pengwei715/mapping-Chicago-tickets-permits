@@ -32,7 +32,7 @@ https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-ZIP-C
 The following Python packages are needed to run this software:
 
 | Package | Version |
---------------------
+| -------- | -------|
 | descartes | 1.1.0 |
 | geocoder | 1.38.1 |
 | geopandas | 0.4.1 |
