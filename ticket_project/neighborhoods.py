@@ -29,8 +29,8 @@ def import_geometries(ds_id, proj=None):
     if not proj:
         proj = {'init': 'epsg:4326'}
 
-    client = Socrata('data.cityofchicago.org', 'SB7994tcuBpSSczrQvMx9N0Uy',
-                     username="benfogarty@uchicago.edu", password='d5Nut6LrCHL&')
+    client = Socrata('data.cityofchicago.org', apptoken,
+                     username, password)
 
     files = client.get(ds_id)
     df = pd.DataFrame(files)
