@@ -91,9 +91,9 @@ def get_permits(start_date):
                 'streetname': 'category'}
 
     client = Socrata('data.cityofchicago.org',
-                     'SB7994tcuBpSSczrQvMx9N0Uy',
-                     username="benfogarty@uchicago.edu",
-                     password="d5Nut6LrCHL&")
+                     myapptoken,
+                     username,
+                     password)
     conds_str = '''{} IS NOT NULL AND
                    {} != "NA" AND 
                    {} != "None" AND
